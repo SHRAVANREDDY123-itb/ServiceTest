@@ -1,0 +1,105 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RW4OBDistributorSvc", "RW4OBDistributorSvc\RW4OBDistributorSvc.csproj", "{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceManagerRW4", "ServiceManagerRW4\ServiceManagerRW4.csproj", "{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RW4OBDistributorProcess", "RW4OBDistributorProcess\RW4OBDistributorProcess.csproj", "{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RW4Entities", "RW4Entities\RW4Entities.csproj", "{2E5A0D55-799B-4E26-B17A-FDACEC78F044}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilitiesRW4", "UtilitiesRW4\UtilitiesRW4.csproj", "{C70C6B4C-D6CF-4FD1-AE85-458604197922}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntitiesRW4", "EntitiesRW4\EntitiesRW4.csproj", "{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Debug|x64.Build.0 = Debug|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Release|x64.ActiveCfg = Release|Any CPU
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68}.Release|x64.Build.0 = Release|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Debug|x64.Build.0 = Debug|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Release|x64.ActiveCfg = Release|Any CPU
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D}.Release|x64.Build.0 = Release|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Debug|x64.Build.0 = Debug|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Release|x64.ActiveCfg = Release|Any CPU
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9}.Release|x64.Build.0 = Release|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Debug|x64.Build.0 = Debug|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Release|x64.ActiveCfg = Release|Any CPU
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044}.Release|x64.Build.0 = Release|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Debug|x64.Build.0 = Debug|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Release|x64.ActiveCfg = Release|Any CPU
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922}.Release|x64.Build.0 = Release|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Debug|x64.Build.0 = Debug|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|x64.ActiveCfg = Release|Any CPU
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {282C38DB-54D0-47CE-AB46-34263A579DB4}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 7
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://sentientwatchonline.visualstudio.com/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = RW4OBDistributorSvc\\RW4OBDistributorSvc.csproj
+		SccProjectName1 = RW4OBDistributorSvc
+		SccLocalPath1 = RW4OBDistributorSvc
+		SccProjectUniqueName2 = ServiceManagerRW4\\ServiceManagerRW4.csproj
+		SccProjectName2 = ServiceManagerRW4
+		SccLocalPath2 = ServiceManagerRW4
+		SccProjectUniqueName3 = RW4OBDistributorProcess\\RW4OBDistributorProcess.csproj
+		SccProjectName3 = RW4OBDistributorProcess
+		SccLocalPath3 = RW4OBDistributorProcess
+		SccProjectUniqueName4 = RW4Entities\\RW4Entities.csproj
+		SccProjectName4 = RW4Entities
+		SccLocalPath4 = RW4Entities
+		SccProjectUniqueName5 = UtilitiesRW4\\UtilitiesRW4.csproj
+		SccProjectName5 = UtilitiesRW4
+		SccLocalPath5 = UtilitiesRW4
+		SccProjectUniqueName6 = EntitiesRW4\\EntitiesRW4.csproj
+		SccProjectName6 = EntitiesRW4
+		SccLocalPath6 = EntitiesRW4
+	EndGlobalSection
+EndGlobal
