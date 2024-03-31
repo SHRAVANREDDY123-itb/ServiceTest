@@ -1,6 +1,7 @@
 ﻿using DBConstants;
 using Entities.RefData;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -58,12 +59,14 @@ namespace ServiceManagerRW4
 
         private IConfiguration _configuration;
         private IServiceProvider _serviceProvider;
-        public ServiceThread(IConfiguration configuration, IServiceProvider serviceProvider, ServiceDB serviceDB)
+        private ILogger _logger;
+        public ServiceThread(IConfiguration configuration, IServiceProvider serviceProvider, ServiceDB serviceDB, ILogger<ServiceThread> logger)
         {
             _serviceProvider=serviceProvider;
             _configuration = configuration;
             sAssemblyPath = _configuration["appSettings:AssemblyPath"];
            _serviceDB=serviceDB;
+            _logger = logger;
         }
 
        
@@ -105,8 +108,8 @@ namespace ServiceManagerRW4
                 Type Type = Assembly.GetType(sAssembly_Nm + "." + sClassName);
 
                 //.net core change, class type constructor is passed with configuration
-                ConstructorInfo constructor = Type.GetConstructor(new[] { typeof(IConfiguration), typeof(IServiceProvider) });
-                object cls = constructor.Invoke(new object[] { _configuration, _serviceProvider });
+                ConstructorInfo constructor = Type.GetConstructor(new[] { typeof(IConfiguration), typeof(IServiceProvider), typeof(ILogger) });
+                object cls = constructor.Invoke(new object[] { _configuration, _serviceProvider, _logger });
 
                 // Activator.CreateInstance(Type);
                 oMethod = cls.GetType().GetMethod(sMethodName);
@@ -124,8 +127,7 @@ namespace ServiceManagerRW4
             }
             catch (Exception oException)
             {
-                Log1.write(oException.Message + "Inner Exception:" + oException.InnerException + "Source:" + oException.Source + "Trace :" + oException.StackTrace);
-                LogException(oException);
+                _logger.LogError(oException.ToString());
                 return false;
 
             }
@@ -147,22 +149,14 @@ namespace ServiceManagerRW4
                 bSuccess = oServiceDB.UpdateServiceThread(drSysServiceThread);
             }
             catch (Exception oException)
-            { 
-                LogException(oException);
+            {
+                _logger.LogError(oException.ToString());
             }
 
             return bSuccess;
         }
 
-        /// <summary>
-        /// Method to Log Exception
-        /// </summary>
-        /// <param name="oException"></param>
-        private void LogException(Exception oException)
-        {
-            LogMessage(oException.Message);
-            LogExceptionToDB(oException);
-        }
+       
 
         /// <summary>
         /// Method to Log Message to Database
@@ -177,32 +171,13 @@ namespace ServiceManagerRW4
             }
             catch (Exception oEx)
             {
-                LogMessage(oEx.Message);
+                _logger.LogError(oEx.ToString());
 
             }
 
         }
 
-        /// <summary>
-        /// Method to Log Message to Log Target(File/Console)
-        /// </summary>
-        /// <param name="sMessage"></param>
-        private void LogMessage(string sMessage)
-        {
-            try
-            {
-                
-                    Log1.write("-Thread:" + this.lThreadId + ":" + sMessage);
-
-                
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
+       
         /// <summary>
         /// To Invoke Job Daily
         /// </summary>
@@ -213,7 +188,7 @@ namespace ServiceManagerRW4
 
             ServiceDB oServiceDB = _serviceDB;
             this.lThreadId = lSysServiceThread_Id;
-            LogMessage("Job Invoked");
+            _logger.LogInformation("Job Invoked");
 
             try
             {
@@ -330,7 +305,7 @@ namespace ServiceManagerRW4
 
                                 if (sRequestedStatus == ServiceStatus.Stop)
                                 {
-                                    LogMessage("Thread Stop request received ");
+                                    _logger.LogInformation("Thread Stop request received ");
                                     //# Stop the Thread
                                     bKeepAlive = false;
                                     this.sThreadStatus = ServiceStatus.Stop;
@@ -345,7 +320,7 @@ namespace ServiceManagerRW4
 
                             if (this.sRequestedStatus == ServiceStatus.Stop)
                             {
-                                LogMessage("Thread Stop request received from Service ");
+                                _logger.LogInformation("Thread Stop request received from Service ");
                                 //# Stop the Thread
                                 bKeepAlive = false;
                                 this.sThreadStatus = ServiceStatus.Stop;
@@ -359,16 +334,14 @@ namespace ServiceManagerRW4
                     }
                     catch (Exception oEx)
                     {
-                        Log1.write(oEx.Message + "Inner Exception:" + oEx.InnerException + "Source:" + oEx.Source + "Trace :" + oEx.StackTrace);
-                        LogException(oEx);
+                        _logger.LogError(oEx.ToString());
                     }
                 }
 
             }
             catch (Exception oException)
             {
-                Log1.write(oException.Message + "Inner Exception:" + oException.InnerException + "Source:" + oException.Source + "Trace :" + oException.StackTrace);
-                LogException(oException);
+                _logger.LogError(oException.ToString());
 
             }
 

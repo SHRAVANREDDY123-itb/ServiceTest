@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Collections.Concurrent;
 using Azure.Messaging.ServiceBus;
-
+using Microsoft.Extensions.Logging;
 
 namespace RWUtilities.Common
 {
@@ -16,7 +16,7 @@ namespace RWUtilities.Common
 
         
 
-        public static async Task SendMessageToAzureSubscription(string topicName, string subscriptionNm, string jsonMessage)
+        public static async Task SendMessageToAzureSubscription(string topicName, string subscriptionNm, string jsonMessage, ILogger logger)
         {
 
 
@@ -35,12 +35,12 @@ namespace RWUtilities.Common
             catch (Exception ex)
             {
 
-                Log.write(ex.ToString());
+                logger.LogError(ex.ToString());
                 //throw ex;
             }
         }
 
-        public  static async Task<List<DistributorJson>> GetQueueMessagefromOBSAzureSubscription(string topicName, string subscriptionName, bool isbatchprocess, int messageCount)
+        public  static async Task<List<DistributorJson>> GetQueueMessagefromOBSAzureSubscription(string topicName, string subscriptionName, bool isbatchprocess, int messageCount,  ILogger logger)
         {
 
             ConcurrentBag<DistributorJson> msgList = new ConcurrentBag<DistributorJson>();
@@ -112,14 +112,14 @@ namespace RWUtilities.Common
             }
             catch (Exception ex)
             {
-                Log.write("ABS Get Method: " + "Subscription Name:" + subscriptionName, ex.InnerException);
+                logger.LogError("ABS Get Method: " + "Subscription Name:" + subscriptionName, ex.InnerException);
                 throw;
             }
             return msgList.ToList();
 
         }
 
-        public static async  Task DeleteMessagebasedonProperties(string topicName, string subscriptionName, string PropertyName, string PropertyValue)
+        public static async  Task DeleteMessagebasedonProperties(string topicName, string subscriptionName, string PropertyName, string PropertyValue, ILogger logger)
         {
             try
             {
@@ -132,9 +132,9 @@ namespace RWUtilities.Common
                
                
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                logger.LogError(ex.ToString());
                 throw;
             }
            

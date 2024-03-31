@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RW4Entities.Models.RWEDIMgmtEntities;
 using RW4Entities.Models.RWOBDistributorsEntities;
 using RWUtilities.Common;
@@ -36,24 +37,28 @@ namespace RW4OBDistributorProcess
         public const string IsBatchProcess = "IsBatchProcess";
         public const string BatchMsgCount = "BatchMsgCount";
         readonly SQLDBHelper? sqlDBHelper;
+        private ILogger _logger;
 
 
 
         #endregion
 
-        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider)
+        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
         {
             try
             {
+                _logger = logger;
+                _logger.LogInformation("RAILINCDataSubscription constructor");
                 sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
                 filePath = sqlDBHelper.GetSysParamValues(CompanyName, SysParamCd, 5);
                 strEvendCd = configuration["appSettings:" + EvendCd];
                 RWUtilities.Common.Utility.connectionString = configuration["appSettings:AzurePrimaryConnectionString"];
+              
 
             }
             catch (Exception ex)
             {
-                Log.write(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
@@ -86,7 +91,7 @@ namespace RW4OBDistributorProcess
                             messageCount = Convert.ToInt32(param.SysParamVal);
                     }
                    
-                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount).Result;
+                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount, _logger).Result;
                     if (messageList != null && messageList.Count > 0)
                     {
                         foreach (DistributorJson json in messageList)
@@ -98,14 +103,14 @@ namespace RW4OBDistributorProcess
                                     bool isSuccess = false;
                                     isSuccess = AzureProcessOutbound(json.TriggerCd, Convert.ToInt64(json.TriggerID), json.Unit, messageList.Count);
                                     if (isSuccess)
-                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID).Wait();
+                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID, _logger).Wait();
 
                                 }
                             }
                             catch (Exception ex)
                             {
 
-                                Log.write("AzureProcessRailINCData --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
+                                _logger.LogError("AzureProcessRailINCData --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
                                 // CreateCargoCareExpection("Auto Accepted Thread Id" + threadID + "Error Message: " + ex.Message + "Error StackTrace: " + ex.StackTrace + "Inner Expection" + ex.InnerException, "MonitorUserDefinedCCInspFromAzure", json.Json);
                             }
                         }
@@ -116,7 +121,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
 
-                Log.write(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
@@ -176,7 +181,7 @@ namespace RW4OBDistributorProcess
                             catch (Exception ex)
                             {
                                 // isSuccess = false;
-                                Log.write(ex);
+                                _logger.LogError(ex.ToString());
                                 //throw;
                             }
                         }
@@ -199,7 +204,7 @@ namespace RW4OBDistributorProcess
                 catch (Exception ex)
                 {
                     isSuccess = false;
-                    Log.write(ex);
+                    _logger.LogError(ex.ToString());
                     //throw;
                 }
                 // }
@@ -236,7 +241,7 @@ namespace RW4OBDistributorProcess
                             messageCount = Convert.ToInt32(param.SysParamVal);
                     }
 
-                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount).Result;
+                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount, _logger).Result;
                     if (messageList != null && messageList.Count > 0)
                     {
                         foreach (DistributorJson json in messageList)
@@ -247,7 +252,7 @@ namespace RW4OBDistributorProcess
                                 {
                                     bool isSuccess = AzureProcessStopOutbound(json.TriggerCd, Convert.ToInt64(json.TriggerID), json.Unit);
                                     if (isSuccess)
-                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID).Wait();
+                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID, _logger).Wait();
 
 
                                 }
@@ -255,7 +260,7 @@ namespace RW4OBDistributorProcess
                             catch (Exception ex)
                             {
 
-                                Log.write("AzureProcessRailINCDataStop --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
+                                _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
                             }
                         }
                     }
@@ -264,7 +269,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write("AzureProcessRailINCDataStop --ThreadId " + threadID, ex);
+                _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID, ex);
             }
         }
 
@@ -329,7 +334,7 @@ namespace RW4OBDistributorProcess
                         }
                         catch (Exception ex)
                         {
-                            Log.write(ex);
+                            _logger.LogError(ex.ToString());
                             //throw;
                         }
 
@@ -352,7 +357,7 @@ namespace RW4OBDistributorProcess
                 catch (Exception ex)
                 {
                     isSuccess = false;
-                    Log.write(ex);
+                    _logger.LogError(ex.ToString());
                     //throw;
                 }
                 // }
@@ -375,7 +380,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write(ex);
+                _logger.LogError(ex.ToString());
                 //throw;
             }
         }

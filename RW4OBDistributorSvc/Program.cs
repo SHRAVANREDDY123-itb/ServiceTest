@@ -1,23 +1,41 @@
 using RW4OBDistributorSvc;
-using Microsoft.Extensions.Configuration;
 using ServiceManagerRW4;
 using RW4Entities;
 using Microsoft.EntityFrameworkCore;
 using RW4OBDistributorProcess;
-using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostcontext, config) =>
     {
-        var env = hostcontext.HostingEnvironment;
+        var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        config.SetBasePath(Directory.GetCurrentDirectory());
+        config.AddJsonFile("appsettings.{environmentName}.json", optional: true, reloadOnChange: true); 
+    })
+    .ConfigureLogging((hostcontext, logger) =>
+    {
+        #pragma warning disable CA1416 // Validate platform compatibility 
+        logger.ClearProviders()
+               .AddEventLog(c =>
+               {
+                   c.SourceName = "RW4OBDistributorSvc";
+                   c.LogName = "RW4";
+                   if (!EventLog.SourceExists("RW4OBDistributorSvc"))
+                   {
+                       EventLog.CreateEventSource("RW4OBDistributorSvc", "RW4");
+                   }
 
-        config.SetBasePath(Directory.GetCurrentDirectory());      
 
+               });
+        #pragma warning restore CA1416
 
-        config.AddJsonFile("appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true); 
     })
     .ConfigureServices((context,services )=>
     {
+        services.AddWindowsService(options =>
+        {
+            options.ServiceName = "SampleApp";
+        });
         services.AddHostedService<RWOBDistributorSvc>();
         services.AddSingleton<ServiceManager>();
         services.AddSingleton<ServiceThread>();
@@ -26,12 +44,6 @@ IHost host = Host.CreateDefaultBuilder(args)
         IConfiguration configuration = context.Configuration;
         string? DBConnectionName = configuration["appSettings:DBConnectionName"];
         string? sConnectString = configuration["appSettings:" + DBConnectionName];
-
-
-       
-
-       
-
         DbContextOptionsBuilder<RWOBDistributorsEntities> dbContextOptionsBuilderobdb = new DbContextOptionsBuilder<RWOBDistributorsEntities>();
         dbContextOptionsBuilderobdb.UseSqlServer(sConnectString);
 

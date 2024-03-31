@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using RW4Entities.Models.RWOBDistributorsEntities;
 using RW4Entities.Models.RWEDIMgmtEntities;
+using Microsoft.Extensions.Logging;
 
 namespace RW4OBDistributorProcess
 {
@@ -41,15 +42,16 @@ namespace RW4OBDistributorProcess
         public const string WAMAuthAPICallCurrentCountLstUpdTime = "WAMAuthAPICallCurrentCountLstUpdTime";
 
        readonly SQLDBHelper? sqlDBHelper;
+        private ILogger _logger;
 
         #endregion
 
-        public WAMDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider)
+        public WAMDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
         {
             try
             {
                 _configuration = configuration;
-
+                _logger = logger;
                 sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
                 WamSubscriptionBaseUrl = _configuration["appSettings:WamSubscriptionBaseUrl"]; 
                 WAMauthenticationURL_RequestData = _configuration["appSettings:WAMauthenticationURLRequestData"];
@@ -62,7 +64,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write(ex);
+                _logger.LogError(ex.ToString());
             }
         }
 
@@ -96,7 +98,7 @@ namespace RW4OBDistributorProcess
                             messageCount = Convert.ToInt32(param.SysParamVal);
                     }
                     
-                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount).Result;
+                    List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount, _logger).Result;
                     if (messageList != null && messageList.Count > 0)
                     {
                         foreach (DistributorJson json in messageList)
@@ -107,14 +109,14 @@ namespace RW4OBDistributorProcess
                                 {
                                     bool isSuccess = AzureProcessOutbound(json.TriggerCd, Convert.ToInt64(json.TriggerID), json.Unit, json.Json, threadID);
                                     if (isSuccess) //delete
-                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID).Wait();
+                                        RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID, _logger).Wait();
 
                                 }
                             }
                             catch (Exception ex)
                             {
 
-                                Log.write("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
+                                _logger.LogError("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
                              }
                         }
                     }
@@ -124,7 +126,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
+                _logger.LogError("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
             }
         }
 
@@ -260,7 +262,7 @@ namespace RW4OBDistributorProcess
                                 JwtToken = GetJwtToken(threadID);
                                 if (!string.IsNullOrEmpty(JwtToken))
                                     sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                                Log.write("PostAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
+                                _logger.LogError("PostAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
                                 CreateSubscriptionExpection("PostAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message, "Create PostAsync service request");
 
                             }
@@ -283,7 +285,7 @@ namespace RW4OBDistributorProcess
                             JwtToken = GetJwtToken(threadID);
                             if (!string.IsNullOrEmpty(JwtToken))
                                 sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                            Log.write("PostAsync resuest is unauthorized." + response.ToString());
+                            _logger.LogError("PostAsync resuest is unauthorized." + response.ToString());
                             CreateSubscriptionExpection("PostAsync resuest is unauthorized." + response.ToString(), "Create PostAsync service request");
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
@@ -292,14 +294,14 @@ namespace RW4OBDistributorProcess
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                Log.write("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error StackTrace: " + wamSubscriptionError.StackTrace);
+                                _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error StackTrace: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error StackTrace: " + wamSubscriptionError.StackTrace, "Create PostAsync service request");
                             }
                         }
                         else
                         {
                             Status = "E";
-                            Log.write("WAM Data Subriction Error. " + response.ToString());
+                            _logger.LogError("WAM Data Subriction Error. " + response.ToString());
                             CreateSubscriptionExpection("WAM Data Subriction Error. " + response.ToString(), "Create PostAsync service request");
                         }
                     }
@@ -363,7 +365,7 @@ namespace RW4OBDistributorProcess
                                 JwtToken = GetJwtToken(threadID);
                                 if (!string.IsNullOrEmpty(JwtToken))
                                     sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                                Log.write("PutAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
+                                _logger.LogError("PutAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
                                 CreateSubscriptionExpection("PutAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message, "Update PutAsync service request");
 
                             }
@@ -386,13 +388,13 @@ namespace RW4OBDistributorProcess
                             JwtToken = GetJwtToken(threadID);
                             if (!string.IsNullOrEmpty(JwtToken))
                                 sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                            Log.write("PutAsync resuest is unauthorized." + response.ToString());
+                            _logger.LogError("PutAsync resuest is unauthorized." + response.ToString());
                             CreateSubscriptionExpection("PutAsync resuest is unauthorized." + response.ToString(), "Update PutAsync service request");
 
                         }
                         else if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            Log.write("WAM Data Subriction Error. ErrorCd: " + "url not found");
+                            _logger.LogError("WAM Data Subriction Error. ErrorCd: " + "url not found");
                             CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "url not found", "Update PutAsync service request");
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
@@ -402,14 +404,14 @@ namespace RW4OBDistributorProcess
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                Log.write("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
+                                _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "Update PutAsync service request");
                             }
                         }
                         else
                         {
                             Status = "E";
-                            Log.write("WAM Data Subriction Error. " + response.ToString());
+                            _logger.LogError("WAM Data Subriction Error. " + response.ToString());
                             CreateSubscriptionExpection("WAM Data Subriction Error. " + response.ToString(), "Update PutAsync service request");
                         }
                     }
@@ -463,7 +465,7 @@ namespace RW4OBDistributorProcess
                                 JwtToken = GetJwtToken(threadID);
                                 if (!string.IsNullOrEmpty(JwtToken))
                                     sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                                Log.write("DeleteAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
+                                _logger.LogError("DeleteAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message);
                                 CreateSubscriptionExpection("DeleteAsync resuest is unauthorized becuase  of sevice is restarted." + ex.InnerException.InnerException.Message, "DeleteAsync service request");
 
                             }
@@ -485,14 +487,14 @@ namespace RW4OBDistributorProcess
                             JwtToken = GetJwtToken(threadID);
                             if (!string.IsNullOrEmpty(JwtToken))
                                 sqlDBHelper?.UpdateWamAPIToken(JwtToken, ParamId);
-                            Log.write("DeleteAsync resuest is unauthorized." + response.ToString());
+                            _logger.LogError("DeleteAsync resuest is unauthorized." + response.ToString());
                             CreateSubscriptionExpection("DeleteAsync resuest is unauthorized." + response.ToString(), "DeleteAsync service request");
 
                         }
                         else if (response.StatusCode == HttpStatusCode.NotFound)
                         {
                             Status = "E";
-                            Log.write("WAM Data Subriction Error. ErrorCd: " + "url not found");
+                            _logger.LogError("WAM Data Subriction Error. ErrorCd: " + "url not found");
                             CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "url not found", "DeleteAsync service request");
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
@@ -501,14 +503,14 @@ namespace RW4OBDistributorProcess
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                Log.write("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
+                                _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "DeleteAsync service request");
                             }
                         }
                         else
                         {
                             Status = "E";
-                            Log.write("WAM Data Subriction Error. " + response.ToString());
+                            _logger.LogError("WAM Data Subriction Error. " + response.ToString());
                             CreateSubscriptionExpection("WAM Data Subriction Error. " + response.ToString(), "DeleteAsync service request");
                         }
                     }
@@ -569,7 +571,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
                 sqlDBHelper?.InsertThreadExceptions(threadID, "Authentication Error:" + ex.InnerException.InnerException.Message.ToString(), DateTime.Now);
-                Log.write(ex);
+                _logger.LogError(ex.ToString());
             }
 
             return accessToken;
@@ -595,7 +597,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write(ex.ToString());
+                _logger.LogError(ex.ToString());
                 return true;
             }
 
@@ -631,7 +633,7 @@ namespace RW4OBDistributorProcess
                 // Check if the current count exceeds the max count
                 if (WAMAuthAPICallCurrentCountV >= WAMAuthAPICallMaxCountV)
                 {
-                    RWUtilities.Common.Utility.SendMessageToAzureSubscription(WAMAPIExceedAlertTopic, WAMAPIExceedAlertSub, JsonConvert.SerializeObject(new { Comment = $"Wam API {authentication_URL} has reached the limit of call count {WAMAuthAPICallCurrentCountV}" })).Wait();
+                    RWUtilities.Common.Utility.SendMessageToAzureSubscription(WAMAPIExceedAlertTopic, WAMAPIExceedAlertSub, JsonConvert.SerializeObject(new { Comment = $"Wam API {authentication_URL} has reached the limit of call count {WAMAuthAPICallCurrentCountV}" }), _logger).Wait();
                     return true;
                 }
 
@@ -640,7 +642,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                Log.write(ex.ToString());
+                _logger.LogError(ex.ToString());
                 return false;
             }
         }

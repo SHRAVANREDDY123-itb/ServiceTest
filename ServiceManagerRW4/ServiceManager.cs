@@ -1,5 +1,6 @@
 ﻿using DBConstants;
 using Entities.RefData;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
 using Utility.DataSetManagement;
@@ -12,10 +13,12 @@ namespace ServiceManagerRW4
        
         private ServiceThread _serviceThread;
         private ServiceDB _serviceDB;
-        public ServiceManager( ServiceThread serviceThread, ServiceDB serviceDB) {
+        private ILogger _logger;
+        public ServiceManager( ServiceThread serviceThread, ServiceDB serviceDB, ILogger<ServiceManager> logger) {
            
             _serviceThread =serviceThread;
             _serviceDB = serviceDB;
+            _logger = logger;
         }
         #region " Properties "
         public string? sServiceCode { get; set; }
@@ -32,21 +35,20 @@ namespace ServiceManagerRW4
 
             this.sServiceCode = sServiceCode;
 
-            LogMessage("Service Invoked");          
+            _logger.LogInformation("Service Invoked");    
 
             try
             {
                 if (await LoadThreads(sServiceCode))
                 {
-                    LogMessage("Threads Loaded");
+                    _logger.LogInformation("Threads Loaded");
 
                 }
 
             }
             catch (Exception oException)
             {
-                Log1.write(oException);
-                LogException(oException);
+                _logger.LogError(oException.ToString());
                 return false;
             }
 
@@ -105,7 +107,7 @@ namespace ServiceManagerRW4
         {
             iAttemptNo++;
 
-            LogMessage("Stopping Threads Attempt " + iAttemptNo);
+            _logger.LogInformation("Stopping Threads Attempt " + iAttemptNo);
 
             if (iAttemptNo > iMaxAttempts)
                 return false;
@@ -114,7 +116,7 @@ namespace ServiceManagerRW4
             foreach (IServiceThread oServiceThread in this.ServiceThreads)
             {
                 oServiceThread.sRequestedStatus = ServiceStatus.Stop;
-                LogMessage("Thread " + oServiceThread.lThreadId + " requested to stop");
+                _logger.LogInformation("Thread " + oServiceThread.lThreadId + " requested to stop");
 
             }
 
@@ -122,7 +124,7 @@ namespace ServiceManagerRW4
 
             if (oRunningThreads.Count<IServiceThread>() <= 0)
             {
-                LogMessage("All Threads Stoppped in Attempt " + iAttemptNo);
+                _logger.LogInformation("All Threads Stoppped in Attempt " + iAttemptNo);
 
                 return true;
 
@@ -137,113 +139,10 @@ namespace ServiceManagerRW4
 
         }
 
-        /// <summary>
-        /// Method to Log Exception
-        /// </summary>
-        /// <param name="oException"></param>
-        private void LogException(Exception oException)
-        {
-            LogMessage(oException.Message);
-          
-        }
-
-        /// <summary>
-        /// Method to Log Message
-        /// </summary>
-        /// <param name="sMessage"></param>
-        private void LogMessage(string sMessage)
-        {
-           Log1.write(DateTime.Now.ToString("dd MMM yyyy HH:mm:ss") + ":Service:" + this.sServiceCode + "-" + sMessage);           
-        }       
-    
+       
 
         #endregion
     }
 
-    public static class Log1
-    {
-        private static object mlock = new object();
-
-        static Log1()
-        {
-            if (!System.Diagnostics.EventLog.Exists("RW3"))
-            {
-                System.Diagnostics.EventLog.CreateEventSource("RW", "RW3");
-            }
-        }
-
-        /// <summary>
-        /// Write function
-        /// </summary>
-        /// <param name="ex">This is Exception object.(Default SourceName is RW3)</param>
-        public static void write(Exception ex)
-        {
-            try
-            {
-                write("RW3", ex);
-            }
-            catch
-            {
-                ////ignore
-            }
-        }
-
-        /// <summary>
-        /// Write function
-        /// </summary>
-        /// <param name="Message">This is Any String Message.(Default SourceName is RW3)</param>
-        public static void write(string Message)
-        {
-            try
-            {
-                write("RW3", Message);
-            }
-            catch
-            {
-                ////ignore
-            }
-        }
-
-        /// <summary>
-        /// Write function
-        /// </summary>
-        /// <param name="Source">This is Event Source Name.(Must exist)</param>
-        /// <param name="ex">This is Exception object.</param>
-        public static void write(string Source, Exception ex)
-        {
-            try
-            {
-                lock (mlock)
-                {
-                    System.Diagnostics.EventLog.WriteEntry(Source, ex.Message + "\\n" + ex.StackTrace + "\\n" + ex.InnerException);
-                }
-            }
-            catch
-            {
-                ////ignore
-            }
-        }
-
-        /// <summary>
-        /// Write function
-        /// </summary>
-        /// <param name="Source">This is Event Source Name.(Must exist)</param>
-        /// <param name="Message">This is Any String Message.</param>
-        public static void write(string Source, string Message)
-        {
-            try
-            {
-                lock (mlock)
-                {
-                    System.Diagnostics.EventLog.WriteEntry(Source, Message);
-
-                    //
-                }
-            }
-            catch
-            {
-                ////ignore
-            }
-        }
-    }
+   
 }

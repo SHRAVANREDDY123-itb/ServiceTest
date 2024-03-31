@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using ServiceManagerRW4;
 
 namespace RW4OBDistributorSvc
@@ -7,11 +5,12 @@ namespace RW4OBDistributorSvc
     public class RWOBDistributorSvc : BackgroundService
     {
         private readonly ILogger<RWOBDistributorSvc> _logger;       
-        private readonly ServiceManager oServiceManager ;
-
+        private readonly ServiceManager oServiceManager;
         private readonly IConfiguration _configuration;
 
-        public RWOBDistributorSvc(ILogger<RWOBDistributorSvc> logger, IConfiguration configuration,  ServiceManager serviceManager)
+        public RWOBDistributorSvc(ILogger<RWOBDistributorSvc> logger, 
+                                  IConfiguration configuration,  
+                                  ServiceManager serviceManager)
         {
             _logger = logger;           
              oServiceManager = serviceManager;
@@ -19,22 +18,22 @@ namespace RW4OBDistributorSvc
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            RWUtilities.Common.Log.write("OnStart");
+            _logger.LogInformation("OnStart");
             try
             {
                 string sServiceCode = _configuration["appSettings:ServiceCode"];
-
-
+              
                 if (!string.IsNullOrWhiteSpace(sServiceCode))
                 {
-                   await  oServiceManager.InvokeService(sServiceCode);
+                    await oServiceManager.InvokeService(sServiceCode);
 
                 }
 
             }
             catch (Exception ex)
             {
-                RWUtilities.Common.Log.write(ex);
+                // RWUtilities.Common.Log.write(ex);
+                _logger.LogError(ex.ToString());
             }
 
            

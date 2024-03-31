@@ -57,6 +57,17 @@ namespace RW4Entities
             modelBuilder.Entity<USP_OBDist_GetServiceQueue_Result>()
             .HasNoKey();
 
+            modelBuilder.Entity<USP_OBDist_GetInsDetailsByEventID_Result>()
+           .HasNoKey();
+
+            modelBuilder.Entity<USP_OBDist_GetInsTripDetails_Result>()
+          .HasNoKey();
+
+            modelBuilder.Entity<USP_OBDist_GetPrenoteDetails_Result>()
+        .HasNoKey();
+            modelBuilder.Entity<Usp_GetWamApiTokenByParamCd_Result>()
+      .HasNoKey();
+            
         }
         private  DbSet<Usp_GetActivePendingPrenoteUnit_Result> Usp_GetActivePendingPrenoteUnit_Result { get; set; }
         private DbSet<USP_GetPreNoteUnitStatusByEventId_Result> USP_GetPreNoteUnitStatusByEventId_Result { get; set; }
@@ -176,9 +187,7 @@ namespace RW4Entities
 
         public DbSet<USP_OBDist_GetInsTripDetails_Result> USP_OBDist_GetInsTripDetails_Result { get; set; }
         public DbSet<USP_OBDist_GetPrenoteDetails_Result> USP_OBDist_GetPrenoteDetails_Result { get; set; }
-        public DbSet<USP_OBDist_GetInsDetailsByEventID_Result> USP_OBDist_GetInsDetailsByEventID_Result { get; set; }
-        public DbSet<USP_MirgrateExstingWamSubscriptionToNewSubscriptionUrl_Result> USP_MirgrateExstingWamSubscriptionToNewSubscriptionUrl_Result { get; set; }
-
+        public DbSet<USP_OBDist_GetInsDetailsByEventID_Result> USP_OBDist_GetInsDetailsByEventID_Result { get; set; }     
 
 
         public virtual IEnumerable<USP_OBDist_GetInsTripDetails_Result> USP_OBDist_GetInsTripDetails(long? prenoteId)
