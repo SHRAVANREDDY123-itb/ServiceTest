@@ -8,9 +8,10 @@ using System.Diagnostics;
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostcontext, config) =>
     {
-        var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        config.SetBasePath(Directory.GetCurrentDirectory());
-        config.AddJsonFile("appsettings.{environmentName}.json", optional: true, reloadOnChange: true); 
+        var environmentName = args[0]; // While creating the windows service pass the environment name as parameter
+        //  config.SetBasePath(Directory.GetCurrentDirectory());
+        config.AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true);
+        config.Build();
     })
     .ConfigureLogging((hostcontext, logger) =>
     {
@@ -34,7 +35,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     {
         services.AddWindowsService(options =>
         {
-            options.ServiceName = "SampleApp";
+            options.ServiceName = "RW4OBDistributor";
         });
         services.AddHostedService<RWOBDistributorSvc>();
         services.AddSingleton<ServiceManager>();

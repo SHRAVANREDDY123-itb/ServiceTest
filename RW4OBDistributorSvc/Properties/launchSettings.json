@@ -2,6 +2,7 @@
   "profiles": {
     "RW4OBDistributorSvc": {
       "commandName": "Project",
+      "commandLineArgs": "Development",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },

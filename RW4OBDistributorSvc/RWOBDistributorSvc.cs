@@ -40,16 +40,15 @@ namespace RW4OBDistributorSvc
         }
         public override Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogCritical("RWOBDistributorSvc is stopping");
             return base.StopAsync(cancellationToken);
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //while (!stoppingToken.IsCancellationRequested)
-            //{               
-            //    //TODO need to decide if the delay needs to be introduced here
-            //    _logger.LogInformation("RWOBDistributorSvc running at: {time}", DateTimeOffset.Now);
-            //    await Task.Delay(1000, stoppingToken);
-            //}
+            while (!stoppingToken.IsCancellationRequested)
+            {
+             await Task.Delay(1000, stoppingToken);
+            }
         }
     }
 }
