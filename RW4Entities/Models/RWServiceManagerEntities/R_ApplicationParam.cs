@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RW4Entities.Models.RWEDIMgmtEntities
+namespace RW4Entities.Models.RWServiceManagerEntities
 {
     public partial class R_ApplicationParam
     {

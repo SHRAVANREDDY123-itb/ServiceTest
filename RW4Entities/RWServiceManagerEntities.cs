@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using RW4Entities.Models.RWEDIMgmtEntities;
+using RW4Entities.Models.RWServiceManagerEntities;
 using System;
 using System.Collections.Generic;
 using System.Data;
