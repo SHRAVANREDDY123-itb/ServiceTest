@@ -1,7 +1,9 @@
+# Ignore all bin and obj folders in the solution
+**/bin/
+**/obj/
+
 # Ignore build outputs
-bin/
-obj/
-out/
+**/out/
 
 # User-specific files
 *.user
