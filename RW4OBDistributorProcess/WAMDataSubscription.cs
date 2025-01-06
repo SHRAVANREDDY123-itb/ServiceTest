@@ -13,8 +13,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using RW4Entities.Models.RWOBDistributorsEntities;
-using RW4Entities.Models.RWEDIMgmtEntities;
 using Microsoft.Extensions.Logging;
+using RW4Entities.Models.RWServiceManagerEntities;
 
 namespace RW4OBDistributorProcess
 {
