@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RW4Entities.Models.RWEDIMgmtEntities;
 using RW4Entities.Models.RWOBDistributorsEntities;
+using RW4Entities.Models.RWServiceManagerEntities;
 using RWUtilities.Common;
 
 

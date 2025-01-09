@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RW4Entities.Models.RWOBDistributorsEntities;
-using RW4Entities.Models.RWEDIMgmtEntities;
+using RW4Entities.Models.RWServiceManagerEntities;
 
 namespace RW4OBDistributorProcess
 {

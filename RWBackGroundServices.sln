@@ -15,6 +15,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilitiesRW4", "UtilitiesRW
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntitiesRW4", "EntitiesRW4\EntitiesRW4.csproj", "{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OutboundService", "OutboundService", "{56EE07A3-9278-46C2-91C3-3F822561434E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{821BC98C-0910-45FA-9557-135ABEF3F93D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{3E90BDC0-CB1E-4B64-B593-DCB6A98D5A16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilitiesRW4UnitTests", "UtilitiesRW4UnitTests\UtilitiesRW4UnitTests.csproj", "{BD8C7A17-8FD3-4E7D-B131-24032C94327E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6EF120F2-53E9-49FA-9B5C-98EE652028B8}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,35 +84,29 @@ Global
 		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|x64.ActiveCfg = Release|Any CPU
 		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE}.Release|x64.Build.0 = Release|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Debug|x64.Build.0 = Debug|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Release|x64.ActiveCfg = Release|Any CPU
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5BFF9BFD-3357-466B-AF63-18F0E8C10E68} = {56EE07A3-9278-46C2-91C3-3F822561434E}
+		{F1DF14DF-E00D-4BBE-B68D-56C046C9486D} = {821BC98C-0910-45FA-9557-135ABEF3F93D}
+		{23BCA1CA-0244-4656-AA18-8BB396F2DEB9} = {56EE07A3-9278-46C2-91C3-3F822561434E}
+		{2E5A0D55-799B-4E26-B17A-FDACEC78F044} = {821BC98C-0910-45FA-9557-135ABEF3F93D}
+		{C70C6B4C-D6CF-4FD1-AE85-458604197922} = {821BC98C-0910-45FA-9557-135ABEF3F93D}
+		{60E1FFF3-883A-4CAC-9AD6-A6AF830FCACE} = {821BC98C-0910-45FA-9557-135ABEF3F93D}
+		{3E90BDC0-CB1E-4B64-B593-DCB6A98D5A16} = {821BC98C-0910-45FA-9557-135ABEF3F93D}
+		{BD8C7A17-8FD3-4E7D-B131-24032C94327E} = {3E90BDC0-CB1E-4B64-B593-DCB6A98D5A16}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {282C38DB-54D0-47CE-AB46-34263A579DB4}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 7
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://sentientwatchonline.visualstudio.com/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = RW4OBDistributorSvc\\RW4OBDistributorSvc.csproj
-		SccProjectName1 = RW4OBDistributorSvc
-		SccLocalPath1 = RW4OBDistributorSvc
-		SccProjectUniqueName2 = ServiceManagerRW4\\ServiceManagerRW4.csproj
-		SccProjectName2 = ServiceManagerRW4
-		SccLocalPath2 = ServiceManagerRW4
-		SccProjectUniqueName3 = RW4OBDistributorProcess\\RW4OBDistributorProcess.csproj
-		SccProjectName3 = RW4OBDistributorProcess
-		SccLocalPath3 = RW4OBDistributorProcess
-		SccProjectUniqueName4 = RW4Entities\\RW4Entities.csproj
-		SccProjectName4 = RW4Entities
-		SccLocalPath4 = RW4Entities
-		SccProjectUniqueName5 = UtilitiesRW4\\UtilitiesRW4.csproj
-		SccProjectName5 = UtilitiesRW4
-		SccLocalPath5 = UtilitiesRW4
-		SccProjectUniqueName6 = EntitiesRW4\\EntitiesRW4.csproj
-		SccProjectName6 = EntitiesRW4
-		SccLocalPath6 = EntitiesRW4
 	EndGlobalSection
 EndGlobal

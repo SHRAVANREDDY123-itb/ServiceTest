@@ -1,0 +1,68 @@
+# Ignore all bin and obj folders in the solution
+**/bin/
+**/obj/
+
+# Ignore build outputs
+**/out/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.tmp
+*.userprefs
+*.vcxproj.user
+*.log
+
+# Mono auto generated files
+mono_crash.*
+
+# Visual Studio specific
+.vs/
+.vscode/
+.vssscc
+*.code-workspace
+
+# Backup & build artifacts
+*.cache
+*.pdb
+*.ilk
+*.aps
+*.pch
+*.exe
+*.dll
+*.log
+*.msi
+*.app
+*.iso
+*.zip
+*.jar
+
+# Rider project files
+.idea/
+
+# Azure specific files
+LocalSettings.json
+.azure/
+
+# DotNet specific files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# npm, yarn, pnpm specific files
+node_modules/
+dist/
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Entity Framework
+Migrations/
+
+# JetBrains Rider
+.idea/

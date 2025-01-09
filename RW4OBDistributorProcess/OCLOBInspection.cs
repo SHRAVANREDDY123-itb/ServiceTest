@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OCLOBService;
-using RW4Entities.Models.RWEDIMgmtEntities;
 using RW4Entities.Models.RWOBDistributorsEntities;
+using RW4Entities.Models.RWServiceManagerEntities;
 using RWUtilities.Common;
 
 

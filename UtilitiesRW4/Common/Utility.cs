@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Concurrent;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
+using System.Net.Mail;
 
 namespace RWUtilities.Common
 {
@@ -138,6 +139,50 @@ namespace RWUtilities.Common
                 throw;
             }
            
+        }
+
+        public static string SendMail(ILogger logger,string strFrom, string strTo, string strSubject, string strBody, string strMailServerName, string attachmentFileName = "", List<Attachment> mailAttachments = null)
+        {
+            try
+            {
+                if (strTo.Trim() != "-")
+                {
+                    using (MailMessage mail = new MailMessage(strFrom, strTo, strSubject, strBody))
+                    {
+                        mail.IsBodyHtml = true;
+                        if (!string.IsNullOrEmpty(attachmentFileName))
+                        {
+                            Attachment attachment = new Attachment(attachmentFileName);
+                            mail.Attachments.Add(attachment);
+                           
+                        }
+                        if (mailAttachments != null && mailAttachments.Count > 0)
+                        {
+                            foreach (var item in mailAttachments)
+                            {
+                                mail.Attachments.Add(item);
+                            }
+
+                        }
+
+                        using (SmtpClient SmtpMail = new SmtpClient())
+                        {
+                            SmtpMail.Host = strMailServerName;
+                            SmtpMail.UseDefaultCredentials = true;
+                            SmtpMail.DeliveryMethod = SmtpDeliveryMethod.Network;  
+                            SmtpMail.Send(mail);
+                        }
+                        return "";
+
+                    }
+                }
+                return "";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("ToEmailId: " + strTo + " Subject: " + strSubject + " Exception: " + ex);
+                return "ToEmailId: " + strTo + " Subject: " + strSubject + " Exception: " + ex;
+            }
         }
 
     }

@@ -70,60 +70,8 @@ namespace RW4Entities
             
         }
         private  DbSet<Usp_GetActivePendingPrenoteUnit_Result> Usp_GetActivePendingPrenoteUnit_Result { get; set; }
-        private DbSet<USP_GetPreNoteUnitStatusByEventId_Result> USP_GetPreNoteUnitStatusByEventId_Result { get; set; }
-        private DbSet<USP_OBDist_GetCCMessage_Result> USP_OBDist_GetCCMessage_Result { get; set; }
-        private DbSet<USP_OBDist_GetWAMSubscriptionMessage_Result> USP_OBDist_GetWAMSubscriptionMessage_Result { get; set; }
-        private DbSet<USP_OBDist_GetOCLMessage_Result> USP_OBDist_GetOCLMessage_Result { get; set; }
-        private DbSet<USP_OBDist_GetSysParamValues_Result> USP_OBDist_GetSysParamValues_Result { get; set; }
-        private DbSet<USP_OBDist_GetRAILMessageBatch_Result> USP_OBDist_GetRAILMessageBatch_Result { get; set; }
-        public DbSet<USP_OBDist_GetMessageBatch_Result> USP_OBDist_GetMessageBatch_Result { get; set; }
-
-        public DbSet<USP_OBDist_GetServiceQueue_Result> USP_OBDist_GetServiceQueue_Result { get; set; }
-
-        //TODO This following Database.ExecuteSqlRaw just returns number of rows
-        public virtual int USP_OBDist_EndConversation(Guid? conversationHandle)
-        {
-            var conversationHandleParameter = conversationHandle.HasValue ?
-                new SqlParameter("@ConversationHandle", conversationHandle) :
-                new SqlParameter("@ConversationHandle", DBNull.Value);
-
-            return Database.ExecuteSqlRaw("exec USP_OBDist_EndConversation @ConversationHandle", conversationHandleParameter);
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetServiceQueue_Result> USP_OBDist_GetServiceQueue(string queueName)
-        {
-            var queueNameParameter = queueName != null ?
-                new SqlParameter("@QueueName", queueName) :
-                new SqlParameter("@QueueName", DBNull.Value);
-
-            return USP_OBDist_GetServiceQueue_Result.FromSqlRaw<USP_OBDist_GetServiceQueue_Result>("exec USP_OBDist_GetServiceQueue @QueueName", queueNameParameter).ToList();
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetMessageBatch_Result> USP_OBDist_GetMessageBatch(int? count, int? timeout, string queueName)
-        {
-            var countParameter = count.HasValue ?
-                new SqlParameter("@count", count) :
-                new SqlParameter("@count", DBNull.Value);
-
-            var timeoutParameter = timeout.HasValue ?
-                new SqlParameter("@timeout", timeout) :
-                new SqlParameter("@timeout", DBNull.Value);
-
-            var queueNameParameter = queueName != null ?
-                new SqlParameter("@queueName", queueName) :
-                new SqlParameter("@queueName", DBNull.Value);
-
-            return USP_OBDist_GetMessageBatch_Result.FromSqlRaw<USP_OBDist_GetMessageBatch_Result>("exec USP_OBDist_GetMessageBatch @count, @timeout, @queueName", countParameter, timeoutParameter, queueNameParameter).ToList();
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetRAILMessageBatch_Result> USP_OBDist_GetRAILMessageBatch(int? count)
-        {
-            var countParameter = count.HasValue ?
-                new SqlParameter("@count", count) :
-                new SqlParameter("@count", DBNull.Value);
-
-            return USP_OBDist_GetRAILMessageBatch_Result.FromSqlRaw<USP_OBDist_GetRAILMessageBatch_Result>("exec USP_OBDist_GetRAILMessageBatch @count", countParameter).ToList();
-        }
+        private DbSet<USP_GetPreNoteUnitStatusByEventId_Result> USP_GetPreNoteUnitStatusByEventId_Result { get; set; } 
+        private DbSet<USP_OBDist_GetSysParamValues_Result> USP_OBDist_GetSysParamValues_Result { get; set; }  
 
         public virtual IEnumerable<USP_OBDist_GetSysParamValues_Result> USP_OBDist_GetSysParamValues(string companyNm, string sysParamCd, int? interfaceId)
         {
@@ -141,25 +89,6 @@ namespace RW4Entities
 
             return USP_OBDist_GetSysParamValues_Result.FromSqlRaw("exec USP_OBDist_GetSysParamValues @CompanyNm, @SysParamCd,@InterfaceId ", companyNmParameter, sysParamCdParameter, interfaceIdParameter);
             
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetOCLMessage_Result> USP_OBDist_GetOCLMessage()
-        {
-            return USP_OBDist_GetOCLMessage_Result.FromSqlRaw("exec USP_OBDist_GetOCLMessage");
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetWAMSubscriptionMessage_Result> USP_OBDist_GetWAMSubscriptionMessage()
-        {
-            return USP_OBDist_GetWAMSubscriptionMessage_Result.FromSqlRaw("exec USP_OBDist_GetWAMSubscriptionMessage");
-        }
-
-        public virtual IEnumerable<USP_OBDist_GetCCMessage_Result> USP_OBDist_GetCCMessage(string oBCCQueue)
-        {
-            var oBCCQueueParameter = oBCCQueue != null ?
-                new SqlParameter("OBCCQueue", oBCCQueue) :
-                new SqlParameter("OBCCQueue", typeof(string));
-
-            return USP_OBDist_GetCCMessage_Result.FromSqlRaw("exec USP_OBDist_GetCCMessage @OBCCQueue", oBCCQueueParameter);
         }
 
         public virtual IEnumerable<Usp_GetActivePendingPrenoteUnit_Result> Usp_GetActivePendingPrenoteUnit(string unitNumber)
