@@ -56,7 +56,7 @@ namespace RW4OBDistributorProcess
             try
             {               
               
-                List<R_SysServiceThreadParams> Params = sqlDBHelper.GetListServiceThreadParamById(threadID);              
+                List<R_SysServiceThreadParams> Params = sqlDBHelper?.GetListServiceThreadParamById(threadID);              
                 if (Params != null)
                 {
                     string topicName = string.Empty;
