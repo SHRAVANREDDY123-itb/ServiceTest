@@ -14,8 +14,8 @@ namespace ServiceManagerRW4
 
         public ServiceDB(IConfiguration configuration)
         {
-            string? DBConnectionName = configuration["appSettings:DBConnectionName"];
-            sConnectString = configuration["appSettings:" + DBConnectionName];
+          
+            sConnectString = configuration["appSettings:DBConnectionName"];
                         
         }
 
@@ -180,53 +180,7 @@ namespace ServiceManagerRW4
 
 
         #region " Update Methods "
-        public bool UpdateServiceStatus(SqlTransaction oTrans, long lSysService_Id, string sCurrentStatus_Cd)
-        {
-            try
-            {
-                SqlParameterCollection aParams;
-
-                using (SqlCommand command = new SqlCommand())
-                    {
-                        command.CommandText = "TSP_SysServiceStatusUpd";
-                        command.Transaction=oTrans;
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Connection = oTrans.Connection;
-
-                        SqlCommandBuilder.DeriveParameters(command);
-                        aParams = command.Parameters;
-                        command.Parameters[1].Value = lSysService_Id;
-                        command.Parameters[2].Value = sCurrentStatus_Cd;
-                        command.Parameters[3].Value = DBNull.Value;
-                                        
-
-                        int outputValue = command.ExecuteNonQuery();
-                        if (outputValue != 0)
-                        {
-                            oTrans.Commit();
-                        }
-                        else
-                        {
-                            oTrans.Rollback();
-
-                        }
-
-                    return outputValue != 0;
-                    }
-
-               
-
-            }
-            catch (System.Data.SqlClient.SqlException oSqlException)
-            {
-                throw (oSqlException);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-           
-        }
+     
 
         public bool UpdateServiceThread( DataRow drSysServiceThread)
         {
@@ -234,13 +188,15 @@ namespace ServiceManagerRW4
             {                
 
                 SqlParameterCollection aParams;
+               
                 using (SqlConnection oConn = new SqlConnection(sConnectString))
                 {
+                    oConn.Open();
+
+                    using (SqlTransaction oTrans = oConn.BeginTransaction())
                     using (SqlCommand command = new SqlCommand())
                     {
-                        oConn.Open();
-                        SqlTransaction oTrans = oConn.BeginTransaction();
-
+                       
                         command.CommandText = "TSP_SysServiceThreadUpd";
                         command.Transaction = oTrans;
                         command.CommandType = CommandType.StoredProcedure;
@@ -258,9 +214,17 @@ namespace ServiceManagerRW4
                         aParams[8].Value = drSysServiceThread[RG_SysServiceThreads.SysServiceThread_Id];
                         aParams[9].Value = DBNull.Value;
 
-                        int outputValue = command.ExecuteNonQuery();
-
-                        return outputValue != 0;
+                        try
+                        {
+                            int outputValue = command.ExecuteNonQuery();
+                            oTrans.Commit(); // Commit the transaction if everything succeeds
+                            return outputValue > 0;
+                        }
+                        catch
+                        {
+                            oTrans.Rollback(); // Rollback the transaction on error
+                            throw; // Re-throw the exception to be handled by the outer catch block
+                        }
                     }
                 }
 
@@ -276,50 +240,7 @@ namespace ServiceManagerRW4
            
         }
 
-        public bool UpdateSysService(SqlTransaction oTrans, DataRow drSysService)
-        {
-            try
-            {
-               
-                SqlParameterCollection aParams;
-
-                using (SqlCommand command = new SqlCommand())
-                {
-                    DateTime LastStarted_DtTm;
-                    DateTime LastStopped_DtTm;
-                    command.CommandText = "TSP_SysServiceUpd";
-                    command.Transaction = oTrans;
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Connection = oTrans.Connection;
-                    SqlCommandBuilder.DeriveParameters(command);
-                    aParams = command.Parameters;
-                   
-                    aParams[1].Value = drSysService[RG_SysService.CurrentStatus_Cd];
-                    aParams[2].Value = drSysService[RG_SysService.RequestedStatus_Cd];
-                    aParams[3].Value = DateTime.TryParse( drSysService[RG_SysService.LastStarted_DtTm].ToString(), out LastStarted_DtTm)? LastStarted_DtTm.ToString("yyyy-MM-dd HH:mm:ss") : DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-                    aParams[4].Value = DateTime.TryParse(drSysService[RG_SysService.LastStopped_DtTm].ToString(), out LastStopped_DtTm)? LastStopped_DtTm.ToString("yyyy-MM-dd HH:mm:ss") : DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-                    aParams[5].Value = drSysService[RG_SysServiceThreads.ReLoad_Flg];
-                    aParams[6].Value = drSysService[RG_SysServiceThreads.SysService_Id];
-                    aParams[7].Value = DBNull.Value;
-
-                    int outputValue = command.ExecuteNonQuery();
-
-                    return outputValue != 0;
-                }
-
-            }
-            catch (System.Data.SqlClient.SqlException oSqlException)
-            {
-                throw (oSqlException);
-            }
-            catch (Exception )
-            {
-                throw ;
-            }
-            finally
-            {
-            }
-        }
+      
         #endregion
 
         #region " Insert Methods "
