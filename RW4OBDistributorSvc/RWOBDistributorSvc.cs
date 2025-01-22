@@ -1,4 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
 using ServiceManagerRW4;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace RW4OBDistributorSvc
 {
@@ -8,13 +10,14 @@ namespace RW4OBDistributorSvc
         private readonly ServiceManager oServiceManager;
         private readonly IConfiguration _configuration;
 
-        public RWOBDistributorSvc(ILogger<RWOBDistributorSvc> logger, 
-                                  IConfiguration configuration,  
-                                  ServiceManager serviceManager)
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
+        public RWOBDistributorSvc(ServiceManager serviceManager,ILogger<RWOBDistributorSvc> logger, 
+                                  IConfiguration configuration)
         {
-            _logger = logger;           
-             oServiceManager = serviceManager;
-            _configuration = configuration;
+            _logger = logger;
+            oServiceManager = serviceManager;
+             _configuration = configuration;
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -22,10 +25,9 @@ namespace RW4OBDistributorSvc
             try
             {
                 string sServiceCode = _configuration["appSettings:ServiceCode"];
-              
                 if (!string.IsNullOrWhiteSpace(sServiceCode))
                 {
-                    await oServiceManager.InvokeService(sServiceCode);
+                    await oServiceManager.InvokeServiceAsync(sServiceCode, cancellationToken);
 
                 }
 

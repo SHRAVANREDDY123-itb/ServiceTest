@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EntitiesRW4\EntitiesRW4.csproj" />
+    <ProjectReference Include="..\RW4Entities\RW4Entities.csproj" />
     <ProjectReference Include="..\UtilitiesRW4\UtilitiesRW4.csproj" />
   </ItemGroup>
 

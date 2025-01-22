@@ -1,148 +1,228 @@
 ﻿using DBConstants;
 using Entities.RefData;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RW4Entities;
+using System;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Reflection;
+using System.Threading;
 using Utility.DataSetManagement;
 
 namespace ServiceManagerRW4
 {
-    public class ServiceManager
+    
+
+   
+    public interface IServiceThread
     {
-        private ConcurrentBag<IServiceThread> ServiceThreads = new ConcurrentBag<IServiceThread>();
-       
-        private ServiceThread _serviceThread;
-        private ServiceDB _serviceDB;
-        private ILogger _logger;
-        public ServiceManager( ServiceThread serviceThread, ServiceDB serviceDB, ILogger<ServiceManager> logger) {
-           
-            _serviceThread =serviceThread;
-            _serviceDB = serviceDB;
-            _logger = logger;
-        }
-        #region " Properties "
-        public string? sServiceCode { get; set; }
-        #endregion
-
-        #region " Methods "
-        /// <summary>
-        /// Invoke Service
-        /// </summary>
-        /// <param name="sServiceCode">Service Code passed from Service Launcher</param>
-        /// <returns></returns>
-        public async Task<bool> InvokeService(string sServiceCode)
-        {
-
-            this.sServiceCode = sServiceCode;
-
-            _logger.LogInformation("Service Invoked");    
-
-            try
-            {
-                if (await LoadThreads(sServiceCode))
-                {
-                    _logger.LogInformation("Threads Loaded");
-
-                }
-
-            }
-            catch (Exception oException)
-            {
-                _logger.LogError(oException.ToString());
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// To Load Threads 
-        /// </summary>
-        /// <param name="sServiceCode"></param>
-        /// <returns></returns>
-        private async Task<bool> LoadThreads(string sServiceCode)
-        {
-            ServiceDB oServiceDB = _serviceDB;
-            DataSet dsServiceDefinition = oServiceDB.GetServiceDefinition(sServiceCode);
-
-            // Service Configuration
-            if (DataSetComponent.CheckRecordExist(dsServiceDefinition, RG_SysService.TableName))
-            {
-                          
-
-                //Service Threads
-                if (DataSetComponent.CheckRecordExist(dsServiceDefinition, RG_SysServiceThreads.TableName))
-                {
-
-                    this.ServiceThreads.Clear();
-                    foreach (DataRow drSysServiceThread in dsServiceDefinition.Tables[RG_SysServiceThreads.TableName].Rows)
-                    {
-                        
-                        long lSysServiceThread_Id = DataSetComponent.ReplaceDBNull(drSysServiceThread[RG_SysServiceThreads.SysServiceThread_Id], (long)0);
-                    
-                        ServiceThread oServiceThread = _serviceThread;  
-                        this.ServiceThreads.Add(oServiceThread);
-
-                        await oServiceThread.InvokeThread(lSysServiceThread_Id);
-                        
-                    }
-
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-      
-
-        /// <summary>
-        /// To Stop Threads
-        /// </summary>
-        /// <param name="iResting_Tm"></param>
-        /// <param name="iAttemptNo"></param>
-        /// <param name="iMaxAttempts"></param>
-        /// <returns></returns>
-        private bool StopThreads(int iResting_Tm, int iAttemptNo, int iMaxAttempts)
-        {
-            iAttemptNo++;
-
-            _logger.LogInformation("Stopping Threads Attempt " + iAttemptNo);
-
-            if (iAttemptNo > iMaxAttempts)
-                return false;
-
-
-            foreach (IServiceThread oServiceThread in this.ServiceThreads)
-            {
-                oServiceThread.sRequestedStatus = ServiceStatus.Stop;
-                _logger.LogInformation("Thread " + oServiceThread.lThreadId + " requested to stop");
-
-            }
-
-            IEnumerable<IServiceThread> oRunningThreads = from IServiceThread oServiceThread in this.ServiceThreads where oServiceThread.sThreadStatus != ServiceStatus.Stop select oServiceThread;
-
-            if (oRunningThreads.Count<IServiceThread>() <= 0)
-            {
-                _logger.LogInformation("All Threads Stoppped in Attempt " + iAttemptNo);
-
-                return true;
-
-            }
-            else
-            {
-
-                Thread.Sleep(iResting_Tm * 1000);
-                return StopThreads(iResting_Tm, iAttemptNo, iMaxAttempts);
-            }
-
-
-        }
-
-       
-
-        #endregion
+        long ThreadId { get; set; }
+        Task InvokeThreadAsync(CancellationToken cancellationToken);
     }
 
    
+    public interface IServiceManager
+    {
+        Task<bool> InvokeServiceAsync(string serviceCode, CancellationToken cancellationToken);
+    }
+
+   
+   
+
+
+ 
+
+
+public class ServiceManager : IServiceManager
+    {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ServiceManager> _logger;
+        private readonly List<IServiceThread> _serviceThreads;
+        private readonly IConfiguration _configuration;
+
+        public List<long> ThreadIds = new List<long>();
+        private readonly string _assemblyPath;
+
+        ServiceManagerDBHelper _dbHelper;
+
+        public ServiceManager(IServiceProvider serviceProvider, ILogger<ServiceManager> logger, IConfiguration configuration, ServiceManagerDBHelper serviceManagerDBHelper)
+        {
+            _serviceProvider = serviceProvider;
+            _logger = logger;
+            _serviceThreads = new List<IServiceThread>();
+            _configuration = configuration;
+            _dbHelper = serviceManagerDBHelper;
+            _assemblyPath = _configuration["appSettings:AssemblyPath"];
+        }
+
+        public async Task<bool> InvokeServiceAsync(string serviceCode, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Service Invoked for {ServiceCode}", serviceCode);
+
+            try
+            {
+                if (await LoadThreadsAsync(serviceCode))
+                {
+                    _logger.LogInformation("Threads Loaded for {ServiceCode}", serviceCode);
+
+                    foreach (var thread in ThreadIds)
+                    {
+                        _ = Task.Run(() => InvokeThreadAsync(thread,cancellationToken), cancellationToken);
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error invoking service {ServiceCode}", serviceCode);
+                return false;
+            }
+        }
+
+        private async Task<bool> LoadThreadsAsync(string serviceCode)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var serviceDB = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
+
+                var serviceDefinition =  serviceDB.GetServiceDefinition(serviceCode);
+
+                if (serviceDefinition.Tables.Contains("RG_SysService") && serviceDefinition.Tables["RG_SysService"].Rows.Count > 0)
+                {
+                    if (serviceDefinition.Tables.Contains("RG_SysServiceThreads"))
+                    {
+                        var threadsTable = serviceDefinition.Tables["RG_SysServiceThreads"];
+
+                        _serviceThreads.Clear();
+                        foreach (DataRow threadRow in threadsTable.Rows)
+                        {
+                            var threadId = Convert.ToInt64(threadRow["SysServiceThreadId"]);
+
+
+                            ThreadIds.Add(threadId);
+
+                           
+                        }
+
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        public async Task InvokeThreadAsync(long ThreadId,CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Invoking thread {ThreadId}", ThreadId);
+
+            try
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var serviceDB = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
+
+                    var threadConfig = await serviceDB.GetThreadConfigurationAsync(ThreadId);
+
+                    if (threadConfig.Rows.Count == 0)
+                    {
+                        _logger.LogWarning("No configuration found for thread {ThreadId}", ThreadId);
+                        return;
+                    }
+
+                    var threadRow = threadConfig.Rows[0];
+                    var sleepTime = Convert.ToInt32(threadRow["ThreadSleepTime"]);
+                    var methodName = threadRow["MethodName"].ToString();
+
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        await ExecuteBusinessLogicAsync(methodName, ThreadId);
+                        await Task.Delay(sleepTime * 1000, cancellationToken);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in thread {ThreadId}", ThreadId);
+            }
+        }
+
+        private async Task ExecuteBusinessLogicAsync(string methodName,long ThreadId)
+        {
+            try
+            {
+                if (DoProcess(methodName, ThreadId))
+                {
+                    await Task.CompletedTask;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Execution failed for method {methodName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing business logic for method {MethodName}", methodName);
+                throw;
+            }
+        }
+
+        private bool DoProcess(string methodName,long ThreadId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(methodName))
+                {
+                    throw new ArgumentException("Method name cannot be null or empty.", nameof(methodName));
+                }
+
+                var parts = methodName.Split('.');
+
+                if (parts.Length != 3)
+                {
+                    throw new ArgumentException("Invalid method name format. Expected format: AssemblyName.ClassName.MethodName", nameof(methodName));
+                }
+
+                var assemblyName = parts[0];
+                var className = parts[1];
+                var method = parts[2];
+
+                var assemblyPath = Path.Combine(_assemblyPath, $"{assemblyName}.dll");
+                if (!File.Exists(assemblyPath))
+                {
+                    throw new FileNotFoundException($"Assembly not found: {assemblyPath}");
+                }
+
+                var assembly = Assembly.LoadFrom(assemblyPath);
+                var type = assembly.GetType($"{assemblyName}.{className}");
+                if (type == null)
+                {
+                    throw new TypeLoadException($"Type not found: {assemblyName}.{className}");
+                }
+
+                var methodInfo = type.GetMethod(method);
+                if (methodInfo == null)
+                {
+                    throw new MissingMethodException($"Method not found: {method} in type {assemblyName}.{className}");
+                }
+
+                var instance = Activator.CreateInstance(type);
+                var result = methodInfo.Invoke(instance, new object[] { ThreadId });
+
+                return result is bool success && success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing method {MethodName}", methodName);
+                return false;
+            }
+        }
+    }
+
+
+
+
 }

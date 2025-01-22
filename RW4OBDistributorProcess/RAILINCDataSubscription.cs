@@ -43,7 +43,7 @@ namespace RW4OBDistributorProcess
 
         #endregion
 
-        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
+        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger<RAILINCDataSubscription> logger)
         {
             try
             {

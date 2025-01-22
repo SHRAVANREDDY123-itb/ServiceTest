@@ -46,7 +46,7 @@ namespace RW4OBDistributorProcess
 
         #endregion
 
-        public WAMDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
+        public WAMDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger<WAMDataSubscription> logger)
         {
             try
             {

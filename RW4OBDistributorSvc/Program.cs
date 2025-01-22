@@ -56,23 +56,20 @@ IHost host = Host.CreateDefaultBuilder(args)
 
 
         services.AddSingleton<ServiceManager>();
-        services.AddSingleton<ServiceThread>();
-        services.AddSingleton<ServiceDB>();
+        services.AddSingleton<ServiceManagerDBHelper>();
+
+
+
 
         IConfiguration configuration = context.Configuration;
        
         string? sConnectString = configuration["appSettings:DBConnectionName"];
-        DbContextOptionsBuilder<RWOBDistributorsEntities> dbContextOptionsBuilderobdb = new DbContextOptionsBuilder<RWOBDistributorsEntities>();
-        dbContextOptionsBuilderobdb.UseSqlServer(sConnectString);
+      
+        services.AddDbContext<RWOBDistributorsEntities>(options =>
+                       options.UseSqlServer(sConnectString));
 
-        DbContextOptionsBuilder<RWServiceManagerEntities> dbContextOptionsBuilderdb = new DbContextOptionsBuilder<RWServiceManagerEntities>();
-        dbContextOptionsBuilderdb.UseSqlServer(sConnectString);
-
-
-        services.AddSingleton(new SQLDBHelper( 
-                              
-                              new RWOBDistributorsEntities(dbContextOptionsBuilderobdb.Options),
-                              new RWServiceManagerEntities(dbContextOptionsBuilderdb.Options)));
+        services.AddDbContext<RWServiceManagerEntities>(options =>
+                      options.UseSqlServer(sConnectString));
 
 
 
