@@ -1,40 +1,40 @@
 using Microsoft.Extensions.DependencyInjection;
 using ServiceManagerRW4;
+using System.Threading;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace RW4OBDistributorSvc
 {
     public class RWOBDistributorSvc : BackgroundService
     {
-        private readonly ILogger<RWOBDistributorSvc> _logger;       
-        private readonly ServiceManager oServiceManager;
+        private readonly ILogger<RWOBDistributorSvc> _logger; 
         private readonly IConfiguration _configuration;
-
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ServiceManager oServiceManager;
+     
+        string? sServiceCode;
 
         public RWOBDistributorSvc(ServiceManager serviceManager,ILogger<RWOBDistributorSvc> logger, 
                                   IConfiguration configuration)
         {
             _logger = logger;
             oServiceManager = serviceManager;
-             _configuration = configuration;
+            _configuration = configuration;
+            
+             
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("OnStart");
+           
             try
             {
-                string sServiceCode = _configuration["appSettings:ServiceCode"];
-                if (!string.IsNullOrWhiteSpace(sServiceCode))
-                {
-                    await oServiceManager.InvokeServiceAsync(sServiceCode, cancellationToken);
-
-                }
+                sServiceCode = _configuration["appSettings:ServiceCode"]?? "RW4OBDistributor";
+                _logger.LogInformation("RWOBDistributorSvc has started");
+               await base.StartAsync(cancellationToken);
 
             }
             catch (Exception ex)
             {
-                // RWUtilities.Common.Log.write(ex);
+               
                 _logger.LogError(ex.ToString());
             }
 
@@ -42,14 +42,20 @@ namespace RW4OBDistributorSvc
         }
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogCritical("RWOBDistributorSvc is stopping");
+            _logger.LogCritical("RWOBDistributorSvc has stopped");
             return base.StopAsync(cancellationToken);
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-             await Task.Delay(1000, stoppingToken);
+               
+                if (!string.IsNullOrWhiteSpace(sServiceCode))
+                {
+                    await oServiceManager.InvokeServiceAsync(sServiceCode, cancellationToken);
+
+                }
+                await Task.Delay(1000, cancellationToken);
             }
         }
     }

@@ -37,19 +37,19 @@ namespace ServiceManagerRW4
 
 public class ServiceManager : IServiceManager
     {
-        private readonly IServiceProvider _serviceProvider;
+     
         private readonly ILogger<ServiceManager> _logger;
         private readonly List<IServiceThread> _serviceThreads;
         private readonly IConfiguration _configuration;
 
-        public List<long> ThreadIds = new List<long>();
-        private readonly string _assemblyPath;
+        public ConcurrentBag<long> ThreadIds = new ConcurrentBag<long>();
+        private readonly string? _assemblyPath;
 
         ServiceManagerDBHelper _dbHelper;
 
-        public ServiceManager(IServiceProvider serviceProvider, ILogger<ServiceManager> logger, IConfiguration configuration, ServiceManagerDBHelper serviceManagerDBHelper)
+        public ServiceManager(ILogger<ServiceManager> logger, IConfiguration configuration, ServiceManagerDBHelper serviceManagerDBHelper)
         {
-            _serviceProvider = serviceProvider;
+           
             _logger = logger;
             _serviceThreads = new List<IServiceThread>();
             _configuration = configuration;
@@ -69,7 +69,7 @@ public class ServiceManager : IServiceManager
 
                     foreach (var thread in ThreadIds)
                     {
-                        _ = Task.Run(() => InvokeThreadAsync(thread,cancellationToken), cancellationToken);
+                       await  InvokeThreadAsync(thread,cancellationToken);
                     }
                 }
 
@@ -84,11 +84,9 @@ public class ServiceManager : IServiceManager
 
         private async Task<bool> LoadThreadsAsync(string serviceCode)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var serviceDB = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
-
-                var serviceDefinition =  serviceDB.GetServiceDefinition(serviceCode);
+           
+               
+                var serviceDefinition =  _dbHelper.GetServiceDefinition(serviceCode);
 
                 if (serviceDefinition.Tables.Contains("RG_SysService") && serviceDefinition.Tables["RG_SysService"].Rows.Count > 0)
                 {
@@ -112,7 +110,7 @@ public class ServiceManager : IServiceManager
                 }
 
                 return false;
-            }
+            
         }
 
         public async Task InvokeThreadAsync(long ThreadId,CancellationToken cancellationToken)
@@ -121,11 +119,8 @@ public class ServiceManager : IServiceManager
 
             try
             {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var serviceDB = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
-
-                    var threadConfig = await serviceDB.GetThreadConfigurationAsync(ThreadId);
+               
+                    var threadConfig = await _dbHelper.GetThreadConfigurationAsync(ThreadId, cancellationToken);
 
                     if (threadConfig.Rows.Count == 0)
                     {
@@ -134,15 +129,17 @@ public class ServiceManager : IServiceManager
                     }
 
                     var threadRow = threadConfig.Rows[0];
-                    var sleepTime = Convert.ToInt32(threadRow["ThreadSleepTime"]);
-                    var methodName = threadRow["MethodName"].ToString();
+                    var sleepTime = Convert.ToInt32(threadRow["ThreadSleepTm"]);
+                    var methodName = threadRow["MethodNm"].ToString();
 
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        await ExecuteBusinessLogicAsync(methodName, ThreadId);
-                        await Task.Delay(sleepTime * 1000, cancellationToken);
-                    }
-                }
+                //while (!cancellationToken.IsCancellationRequested)
+                //{
+                //   // await ExecuteBusinessLogicAsync(methodName, ThreadId);
+                //    await Task.Delay(sleepTime * 1000, cancellationToken);
+                //}
+
+                await Task.Delay(sleepTime * 1000, cancellationToken);
+
             }
             catch (Exception ex)
             {
