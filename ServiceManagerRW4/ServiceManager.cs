@@ -1,5 +1,6 @@
 ﻿using DBConstants;
 using Entities.RefData;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -84,8 +85,8 @@ namespace ServiceManagerRW4
                     var threadIds = _dbHelper.GetActiveThreads(_serviceCode);
                     _logger.LogInformation($"{string.Join(",", threadIds)} threads");
                     // TODO remove hardcoded value
-                    ThreadIds.Add(419);
-                    //foreach (var threadId in threadIds) { ThreadIds.Add(threadId); }
+                   // ThreadIds.Add(419);
+                    foreach (var threadId in threadIds) { ThreadIds.Add(threadId); }
                 }
                 return true;
             }
@@ -97,7 +98,7 @@ namespace ServiceManagerRW4
 
         }
 
-        public async Task InvokeThreadAsync(long ThreadId, CancellationToken cancellationToken)
+        private async Task InvokeThreadAsync(long ThreadId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Invoking thread {ThreadId}", ThreadId);
 
@@ -106,7 +107,7 @@ namespace ServiceManagerRW4
 
                 SyServiceThreadConfiguration syServiceThreadConfiguration = _dbHelper.GetActiveThreadDetails(ThreadId);
 
-                await ExecuteBusinessLogicAsync(syServiceThreadConfiguration.AssemblyFullName, ThreadId);
+                 InvokeAssembly(syServiceThreadConfiguration.AssemblyFullName, ThreadId);
 
                 await Task.Delay(syServiceThreadConfiguration.ThreadSleepTm * 1000, cancellationToken);
 
@@ -117,27 +118,9 @@ namespace ServiceManagerRW4
             }
         }
 
-        private async Task ExecuteBusinessLogicAsync(string methodName, long ThreadId)
-        {
-            try
-            {
-                if (DoProcess(methodName, ThreadId))
-                {
-                    await Task.CompletedTask;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Execution failed for method {methodName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing business logic for method {MethodName}", methodName);
-                throw;
-            }
-        }
+       
 
-        private bool DoProcess(string AssemblyFullName, long ThreadId)
+        private bool InvokeAssembly(string AssemblyFullName, long ThreadId)
         {
             try
             {
@@ -164,27 +147,32 @@ namespace ServiceManagerRW4
                 }
 
                 var assembly = Assembly.LoadFrom(assemblyPath);
+
+
                 var type = assembly.GetType($"{assemblyName}.{className}");
                 if (type == null)
                 {
                     throw new TypeLoadException($"Type not found: {assemblyName}.{className}");
                 }
-                Type Type = assembly.GetType(assemblyName + "." + className);
-                ConstructorInfo constructor = Type.GetConstructor(new[] { typeof(IConfiguration), typeof(IServiceProvider), typeof(ILogger) });
-
-                object cls = constructor.Invoke(new object[] { _configuration, _serviceProvider, _logger });
 
 
-                var methodInfo = cls.GetType().GetMethod(methodName);
-                if (methodInfo == null)
+
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    throw new MissingMethodException($"Method not found: {methodName} in type {assemblyName}.{className}");
+                    var scopedProvider = scope.ServiceProvider;
+
+                    var service = scopedProvider.GetService(type);
+                    var methodInfo = type.GetMethod(methodName);
+                    if (methodInfo == null)
+                    {
+                        throw new MissingMethodException($"Method not found: {methodName} in type {assemblyName}.{className}");
+                    }
+
+
+                    var result = methodInfo.Invoke(service, new object[] { ThreadId });
+
+                    return result is bool success && success;
                 }
-
-
-                var result = methodInfo.Invoke(cls, new object[] { ThreadId });
-
-                return result is bool success && success;
             }
             catch (Exception ex)
             {
@@ -192,6 +180,10 @@ namespace ServiceManagerRW4
                 return false;
             }
         }
+
+
+
+
     }
 
 
