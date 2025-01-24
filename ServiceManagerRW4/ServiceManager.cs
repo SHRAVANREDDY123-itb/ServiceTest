@@ -84,8 +84,7 @@ namespace ServiceManagerRW4
                     List<SysServiceThread> sysServiceThreads = new List<SysServiceThread>();
                     var threadIds = _dbHelper.GetActiveThreads(_serviceCode);
                     _logger.LogInformation($"{string.Join(",", threadIds)} threads");
-                    // TODO remove hardcoded value
-                   // ThreadIds.Add(419);
+                  
                     foreach (var threadId in threadIds) { ThreadIds.Add(threadId); }
                 }
                 return true;
@@ -107,7 +106,7 @@ namespace ServiceManagerRW4
 
                 SyServiceThreadConfiguration syServiceThreadConfiguration = _dbHelper.GetActiveThreadDetails(ThreadId);
 
-                 InvokeAssembly(syServiceThreadConfiguration.AssemblyFullName, ThreadId);
+                await InvokeAssembly(syServiceThreadConfiguration.AssemblyFullName, ThreadId, cancellationToken);
 
                 await Task.Delay(syServiceThreadConfiguration.ThreadSleepTm * 1000, cancellationToken);
 
@@ -120,7 +119,7 @@ namespace ServiceManagerRW4
 
        
 
-        private bool InvokeAssembly(string AssemblyFullName, long ThreadId)
+        private async Task<bool> InvokeAssembly(string AssemblyFullName, long ThreadId, CancellationToken cancellationToken)
         {
             try
             {
@@ -146,7 +145,7 @@ namespace ServiceManagerRW4
                     throw new FileNotFoundException($"Assembly not found: {assemblyPath}");
                 }
 
-                var assembly = Assembly.LoadFrom(assemblyPath);
+                var assembly = await Task.Run(() => Assembly.LoadFrom(assemblyPath));
 
 
                 var type = assembly.GetType($"{assemblyName}.{className}");
@@ -168,10 +167,8 @@ namespace ServiceManagerRW4
                         throw new MissingMethodException($"Method not found: {methodName} in type {assemblyName}.{className}");
                     }
 
-
-                    var result = methodInfo.Invoke(service, new object[] { ThreadId });
-
-                    return result is bool success && success;
+                    await Task.Run(() => methodInfo.Invoke(service, new object[] { ThreadId }));
+                    return true;
                 }
             }
             catch (Exception ex)

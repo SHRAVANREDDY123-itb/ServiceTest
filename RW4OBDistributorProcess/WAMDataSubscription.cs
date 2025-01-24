@@ -41,7 +41,7 @@ namespace RW4OBDistributorProcess
         public const string WAMAuthAPICallCurrentCount = "WAMAuthAPICallCurrentCount";
         public const string WAMAuthAPICallCurrentCountLstUpdTime = "WAMAuthAPICallCurrentCountLstUpdTime";
 
-       readonly SQLDBHelper? sqlDBHelper;
+       readonly OBDBHelper? sqlDBHelper;
         private ILogger _logger;
 
         #endregion
@@ -52,7 +52,7 @@ namespace RW4OBDistributorProcess
             {
                 _configuration = configuration;
                 _logger = logger;
-                sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
+                sqlDBHelper = serviceProvider.GetRequiredService<OBDBHelper>();
                 WamSubscriptionBaseUrl = _configuration["appSettings:WamSubscriptionBaseUrl"]; 
                 WAMauthenticationURL_RequestData = _configuration["appSettings:WAMauthenticationURLRequestData"];
                 WAMAPIExceedAlertTopic = _configuration["appSettings:WAMAPIExceedAlertTopic"]; 

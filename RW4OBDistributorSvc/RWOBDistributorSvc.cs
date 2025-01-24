@@ -13,8 +13,8 @@ namespace RW4OBDistributorSvc
 
 
 
-        public RWOBDistributorSvc(ServiceManager serviceManager, ILogger<RWOBDistributorSvc> logger,
-                                  IConfiguration configuration)
+        public RWOBDistributorSvc(ServiceManager serviceManager, ILogger<RWOBDistributorSvc> logger
+                                  )
         {
             _logger = logger;
             oServiceManager = serviceManager;

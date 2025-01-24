@@ -57,7 +57,7 @@ IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton<ServiceManager>();
         services.AddSingleton<ServiceManagerDBHelper>();
-        services.AddSingleton<SQLDBHelper>();
+        services.AddSingleton<OBDBHelper>();
         services.AddScoped<RAILINCDataSubscription>();
 
         services.AddScoped<WAMDataSubscription>();
