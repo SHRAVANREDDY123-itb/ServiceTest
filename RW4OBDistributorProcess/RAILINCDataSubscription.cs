@@ -43,14 +43,15 @@ namespace RW4OBDistributorProcess
 
         #endregion
 
-        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger<RAILINCDataSubscription> logger)
+        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
         {
             try
             {
                 _logger = logger;
                 _logger.LogInformation("RAILINCDataSubscription constructor");
                 sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
-                filePath = sqlDBHelper.GetSysParamValues(CompanyName, SysParamCd, 5);
+                //TODO remove following comment
+                //filePath = sqlDBHelper.GetSysParamValues(CompanyName, SysParamCd, 5);
                 strEvendCd = configuration["appSettings:" + EvendCd];
                 RWUtilities.Common.Utility.connectionString = configuration["appSettings:AzurePrimaryConnectionString"];
               

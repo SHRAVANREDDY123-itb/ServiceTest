@@ -15,7 +15,7 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[T_ThreadExceptionLog]",
+         "Name": "[dbo].[R_SysService]",
          "ObjectType": 0
       }
    ],

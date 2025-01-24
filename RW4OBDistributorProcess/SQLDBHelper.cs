@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RW4Entities.Models.RWOBDistributorsEntities;
 using RW4Entities.Models.RWServiceManagerEntities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RW4OBDistributorProcess
 {
@@ -15,15 +16,12 @@ namespace RW4OBDistributorProcess
        
         RWOBDistributorsEntities obdb;
         RWServiceManagerEntities db;
-        public SQLDBHelper(
-                           
-                           RWOBDistributorsEntities obdb,
-                           RWServiceManagerEntities db)
+        public SQLDBHelper( IServiceScopeFactory scopeFactory)
         {
            
            
-            this.obdb = obdb;
-            this.db = db;
+            //this.obdb = obdb;
+            //this.db = db;
         }
 
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RW4Entities;
+using ServiceManagerRW4.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
@@ -13,132 +14,101 @@ using Utility.DataSetManagement;
 
 namespace ServiceManagerRW4
 {
-    
 
-   
-    public interface IServiceThread
-    {
-        long ThreadId { get; set; }
-        Task InvokeThreadAsync(CancellationToken cancellationToken);
-    }
 
-   
+
+
+
     public interface IServiceManager
     {
-        Task<bool> InvokeServiceAsync(string serviceCode, CancellationToken cancellationToken);
+        Task InvokeServiceAsync(CancellationToken cancellationToken);
     }
 
-   
-   
 
 
- 
 
 
-public class ServiceManager : IServiceManager
+
+
+
+    public class ServiceManager : IServiceManager
     {
-     
-        private readonly ILogger<ServiceManager> _logger;
-        private readonly List<IServiceThread> _serviceThreads;
+
+        private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ConcurrentBag<long> ThreadIds = new ConcurrentBag<long>();
-        private readonly string? _assemblyPath;
-
+        private ConcurrentBag<long> ThreadIds = new ConcurrentBag<long>();
+        private readonly string _assemblyPath;
         ServiceManagerDBHelper _dbHelper;
+        private readonly string _serviceCode;
 
-        public ServiceManager(ILogger<ServiceManager> logger, IConfiguration configuration, ServiceManagerDBHelper serviceManagerDBHelper)
+        public ServiceManager(ILogger<ServiceManager> logger, IConfiguration configuration, IServiceProvider serviceProvider, ServiceManagerDBHelper serviceManagerDBHelper)
         {
-           
-            _logger = logger;
-            _serviceThreads = new List<IServiceThread>();
-            _configuration = configuration;
-            _dbHelper = serviceManagerDBHelper;
-            _assemblyPath = _configuration["appSettings:AssemblyPath"];
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
+            _dbHelper = serviceManagerDBHelper ?? throw new ArgumentNullException(nameof(serviceManagerDBHelper));
+            _assemblyPath = configuration["appSettings:AssemblyPath"]
+                ?? throw new ArgumentException("AssemblyPath is not configured.", nameof(configuration));
+            _serviceCode = configuration["appSettings:ServiceCode"]
+                ?? throw new ArgumentException("ServiceCode is not configured.", nameof(configuration));
         }
 
-        public async Task<bool> InvokeServiceAsync(string serviceCode, CancellationToken cancellationToken)
+        public async Task InvokeServiceAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Service Invoked for {ServiceCode}", serviceCode);
-
+            _logger.LogInformation("Service Invoked for {ServiceCode}", _serviceCode);
             try
             {
-                if (await LoadThreadsAsync(serviceCode))
+                foreach (var thread in ThreadIds)
                 {
-                    _logger.LogInformation("Threads Loaded for {ServiceCode}", serviceCode);
-
-                    foreach (var thread in ThreadIds)
-                    {
-                       await  InvokeThreadAsync(thread,cancellationToken);
-                    }
+                    await InvokeThreadAsync(thread, cancellationToken);
                 }
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error invoking service {ServiceCode}", _serviceCode);
+
+            }
+        }
+
+        public bool LoadThreads()
+        {
+            try
+            {
+                if (_dbHelper.CheckServiceAndThreadsExists(_serviceCode))
+                {
+                    List<SysServiceThread> sysServiceThreads = new List<SysServiceThread>();
+                    var threadIds = _dbHelper.GetActiveThreads(_serviceCode);
+                    _logger.LogInformation($"{string.Join(",", threadIds)} threads");
+                    // TODO remove hardcoded value
+                    ThreadIds.Add(419);
+                    //foreach (var threadId in threadIds) { ThreadIds.Add(threadId); }
+                }
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error invoking service {ServiceCode}", serviceCode);
+                _logger.LogError(ex.ToString());
                 return false;
             }
+
         }
 
-        private async Task<bool> LoadThreadsAsync(string serviceCode)
-        {
-           
-               
-                var serviceDefinition =  _dbHelper.GetServiceDefinition(serviceCode);
-
-                if (serviceDefinition.Tables.Contains("RG_SysService") && serviceDefinition.Tables["RG_SysService"].Rows.Count > 0)
-                {
-                    if (serviceDefinition.Tables.Contains("RG_SysServiceThreads"))
-                    {
-                        var threadsTable = serviceDefinition.Tables["RG_SysServiceThreads"];
-
-                        _serviceThreads.Clear();
-                        foreach (DataRow threadRow in threadsTable.Rows)
-                        {
-                            var threadId = Convert.ToInt64(threadRow["SysServiceThreadId"]);
-
-
-                            ThreadIds.Add(threadId);
-
-                           
-                        }
-
-                        return true;
-                    }
-                }
-
-                return false;
-            
-        }
-
-        public async Task InvokeThreadAsync(long ThreadId,CancellationToken cancellationToken)
+        public async Task InvokeThreadAsync(long ThreadId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Invoking thread {ThreadId}", ThreadId);
 
             try
             {
-               
-                    var threadConfig = await _dbHelper.GetThreadConfigurationAsync(ThreadId, cancellationToken);
 
-                    if (threadConfig.Rows.Count == 0)
-                    {
-                        _logger.LogWarning("No configuration found for thread {ThreadId}", ThreadId);
-                        return;
-                    }
+                SyServiceThreadConfiguration syServiceThreadConfiguration = _dbHelper.GetActiveThreadDetails(ThreadId);
 
-                    var threadRow = threadConfig.Rows[0];
-                    var sleepTime = Convert.ToInt32(threadRow["ThreadSleepTm"]);
-                    var methodName = threadRow["MethodNm"].ToString();
+                await ExecuteBusinessLogicAsync(syServiceThreadConfiguration.AssemblyFullName, ThreadId);
 
-                //while (!cancellationToken.IsCancellationRequested)
-                //{
-                //   // await ExecuteBusinessLogicAsync(methodName, ThreadId);
-                //    await Task.Delay(sleepTime * 1000, cancellationToken);
-                //}
-
-                await Task.Delay(sleepTime * 1000, cancellationToken);
+                await Task.Delay(syServiceThreadConfiguration.ThreadSleepTm * 1000, cancellationToken);
 
             }
             catch (Exception ex)
@@ -147,7 +117,7 @@ public class ServiceManager : IServiceManager
             }
         }
 
-        private async Task ExecuteBusinessLogicAsync(string methodName,long ThreadId)
+        private async Task ExecuteBusinessLogicAsync(string methodName, long ThreadId)
         {
             try
             {
@@ -167,25 +137,25 @@ public class ServiceManager : IServiceManager
             }
         }
 
-        private bool DoProcess(string methodName,long ThreadId)
+        private bool DoProcess(string AssemblyFullName, long ThreadId)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(methodName))
+                if (string.IsNullOrWhiteSpace(AssemblyFullName))
                 {
-                    throw new ArgumentException("Method name cannot be null or empty.", nameof(methodName));
+                    throw new ArgumentException("Method name cannot be null or empty.", nameof(AssemblyFullName));
                 }
 
-                var parts = methodName.Split('.');
+                var parts = AssemblyFullName.Split('.');
 
                 if (parts.Length != 3)
                 {
-                    throw new ArgumentException("Invalid method name format. Expected format: AssemblyName.ClassName.MethodName", nameof(methodName));
+                    throw new ArgumentException("Invalid method name format. Expected format: AssemblyName.ClassName.MethodName", nameof(AssemblyFullName));
                 }
 
                 var assemblyName = parts[0];
                 var className = parts[1];
-                var method = parts[2];
+                var methodName = parts[2];
 
                 var assemblyPath = Path.Combine(_assemblyPath, $"{assemblyName}.dll");
                 if (!File.Exists(assemblyPath))
@@ -199,21 +169,26 @@ public class ServiceManager : IServiceManager
                 {
                     throw new TypeLoadException($"Type not found: {assemblyName}.{className}");
                 }
+                Type Type = assembly.GetType(assemblyName + "." + className);
+                ConstructorInfo constructor = Type.GetConstructor(new[] { typeof(IConfiguration), typeof(IServiceProvider), typeof(ILogger) });
 
-                var methodInfo = type.GetMethod(method);
+                object cls = constructor.Invoke(new object[] { _configuration, _serviceProvider, _logger });
+
+
+                var methodInfo = cls.GetType().GetMethod(methodName);
                 if (methodInfo == null)
                 {
-                    throw new MissingMethodException($"Method not found: {method} in type {assemblyName}.{className}");
+                    throw new MissingMethodException($"Method not found: {methodName} in type {assemblyName}.{className}");
                 }
 
-                var instance = Activator.CreateInstance(type);
-                var result = methodInfo.Invoke(instance, new object[] { ThreadId });
+
+                var result = methodInfo.Invoke(cls, new object[] { ThreadId });
 
                 return result is bool success && success;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing method {MethodName}", methodName);
+                _logger.LogError(ex, $"Error processing method {AssemblyFullName}");
                 return false;
             }
         }

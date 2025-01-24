@@ -7,38 +7,45 @@ namespace RW4OBDistributorSvc
 {
     public class RWOBDistributorSvc : BackgroundService
     {
-        private readonly ILogger<RWOBDistributorSvc> _logger; 
-        private readonly IConfiguration _configuration;
-        private readonly ServiceManager oServiceManager;
-     
-        string? sServiceCode;
+        private readonly ILogger<RWOBDistributorSvc> _logger;
 
-        public RWOBDistributorSvc(ServiceManager serviceManager,ILogger<RWOBDistributorSvc> logger, 
+        private readonly ServiceManager oServiceManager;
+
+
+
+        public RWOBDistributorSvc(ServiceManager serviceManager, ILogger<RWOBDistributorSvc> logger,
                                   IConfiguration configuration)
         {
             _logger = logger;
             oServiceManager = serviceManager;
-            _configuration = configuration;
-            
-             
+
+
+
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-           
+
             try
             {
-                sServiceCode = _configuration["appSettings:ServiceCode"]?? "RW4OBDistributor";
+
                 _logger.LogInformation("RWOBDistributorSvc has started");
-               await base.StartAsync(cancellationToken);
+                if (oServiceManager.LoadThreads())
+                {
+                    await base.StartAsync(cancellationToken);
+                }
+                else
+                {
+                    _logger.LogError("RWOBDistributorSvc couldnt load threads");
+                }
 
             }
             catch (Exception ex)
             {
-               
+
                 _logger.LogError(ex.ToString());
             }
 
-           
+
         }
         public override Task StopAsync(CancellationToken cancellationToken)
         {
@@ -49,12 +56,11 @@ namespace RW4OBDistributorSvc
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-               
-                if (!string.IsNullOrWhiteSpace(sServiceCode))
-                {
-                    await oServiceManager.InvokeServiceAsync(sServiceCode, cancellationToken);
 
-                }
+
+                await oServiceManager.InvokeServiceAsync(cancellationToken);
+
+
                 await Task.Delay(1000, cancellationToken);
             }
         }

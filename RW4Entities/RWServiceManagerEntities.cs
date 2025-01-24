@@ -19,12 +19,10 @@ namespace RW4Entities
         }
 
         public virtual DbSet<R_Params> R_Params { get; set; }
+        public virtual DbSet<R_SysService> R_SysService { get; set; }
         public virtual DbSet<R_ApplicationParam> R_ApplicationParam { get; set; }
-
         public virtual DbSet<R_SysServiceThreads> R_SysServiceThreads { get; set; }
-
         public virtual DbSet<T_ThreadExceptionLog> T_ThreadExceptionLog { get; set; }
-
         public virtual int TSP_ThreadExceptionLogIns(long? ipSysServiceThread_Id, string ipThreadException, DateTime? ipCreate_DtTm, out long op_SysServiceThreadLog_Id)
         {
             var ipSysServiceThread_IdParameter = ipSysServiceThread_Id.HasValue ?
@@ -53,81 +51,7 @@ namespace RW4Entities
 
             return O; // Return value as needed
         }
-
         public virtual DbSet<R_SysServiceThreadParams> R_SysServiceThreadParams { get; set; }
-
-        public virtual DataSet GetServiceDefinition(string sSysService_Cd)
-        {
-            var result = new DataSet();
-
-            try
-            {
-                using var connection = Database.GetDbConnection();
-                using var command = connection.CreateCommand();
-
-                command.CommandText = "TSP_GetSysService";
-                command.CommandType = CommandType.StoredProcedure;
-
-                var parameter = command.CreateParameter();
-                parameter.ParameterName = "ipSysService_Cd";
-                parameter.Value = sSysService_Cd ?? throw new ArgumentNullException(nameof(sSysService_Cd));
-                command.Parameters.Add(parameter);
-
-                connection.Open();
-
-                using (var adapter = new SqlDataAdapter((SqlCommand)command))
-                {
-                    adapter.TableMappings.Add("Table", "RG_SysService");
-                    adapter.TableMappings.Add("Table1", "RG_SysServiceThreads");
-
-                    adapter.Fill(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log exception (replace with actual logging if available)
-                throw new InvalidOperationException("Failed to execute GetServiceDefinition", ex);
-            }
-
-            return result;
-        }
-        public async Task<DataTable> GetThreadConfigurationAsync(long threadId, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = new DataTable();
-
-                var connection = Database.GetDbConnection();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "TSP_SysServiceThreadSel";
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    var parameter = command.CreateParameter();
-                    parameter.ParameterName = "ipSysServiceThread_Id";
-                    parameter.Value = threadId;
-                    command.Parameters.Add(parameter);
-
-                    connection.Open();
-
-                    using (var reader = await command.ExecuteReaderAsync(cancellationToken))
-                    {
-                        result.Load(reader);
-                    }
-
-                    connection.Close();
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                
-                throw;
-            }
-        }
-
-    
 
     }
 }

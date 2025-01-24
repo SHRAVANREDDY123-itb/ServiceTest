@@ -57,19 +57,17 @@ IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton<ServiceManager>();
         services.AddSingleton<ServiceManagerDBHelper>();
-
-
-
+        services.AddSingleton<SQLDBHelper>();
 
         IConfiguration configuration = context.Configuration;
        
         string? sConnectString = configuration["appSettings:DBConnectionName"];
       
         services.AddDbContext<RWOBDistributorsEntities>(options =>
-                       options.UseSqlServer(sConnectString));
+                       options.UseSqlServer(sConnectString).EnableSensitiveDataLogging());
 
         services.AddDbContext<RWServiceManagerEntities>(options =>
-                      options.UseSqlServer(sConnectString));
+                      options.UseSqlServer(sConnectString).EnableSensitiveDataLogging());
 
 
 
