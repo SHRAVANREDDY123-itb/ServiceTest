@@ -3,6 +3,7 @@ using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using RW4Entities.Models;
 using ServiceManagerRW4.Models;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace ServiceManagerRW4
 {
@@ -60,14 +61,14 @@ namespace ServiceManagerRW4
                 throw;
             }
         }
-        public SyServiceThreadConfiguration GetActiveThreadDetails(long threadId)
+        public SysServiceThread GetActiveThreadDetails(long threadId)
         {
             try
             {
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
-                    var thread = db.R_SysServiceThreads
+                    R_SysServiceThreads thread = db.R_SysServiceThreads
                                    .Where(x => x.SysServiceThreadId == threadId && x.IsActive == "Y")
                                    .FirstOrDefault();
 
@@ -77,7 +78,25 @@ namespace ServiceManagerRW4
                         throw new InvalidOperationException($"No active thread found with ID {threadId}.");
                     }
 
-                    return new SyServiceThreadConfiguration() { threadID = thread.SysServiceThreadId, AssemblyFullName = thread.MethodNm, ThreadSleepTm = (int)thread.ThreadSleepTm };
+                    return new SysServiceThread
+                    {
+                        SysServiceThreadId = thread.SysServiceThreadId,
+                        ServiceId = thread.SysServiceId,
+                        CurrentStatusCode = thread.CurrentStatusCd,
+                        RequestedStatusCode = thread.RequestedStatusCd,
+                        LastStarted = thread.LastStartedDtTm,
+                        LastStopped = thread.LastStoppedDtTm,
+                        CurrentProcessingStart = thread.CurrentProcessingStartDtTm,
+                        SleepTime = thread.ThreadSleepTm,
+                        ReloadFlag = thread.ReLoadFlg,
+                        AssemblyFullName = thread.MethodNm,
+                        IsActive = thread.IsActive,
+                        RetryCount = thread.Retries,
+                        ThreadType = thread.ThreadType,
+                        TaskTime = thread.TaskTm,
+                        IsSuccessful = thread.IsSuccesful
+                    };
+
 
                 }
             }
@@ -88,7 +107,7 @@ namespace ServiceManagerRW4
             }
         }     
 
-        public async Task< bool> UpdateServiceThreadAsync(R_SysServiceThreads updatedThread, CancellationToken cancellationToken)
+        public async Task< bool> UpdateServiceThreadAsync(SysServiceThread updatedThread, CancellationToken cancellationToken)
         {
             try
             {
@@ -100,13 +119,13 @@ namespace ServiceManagerRW4
                     {
                         return false;
                     }
-                    existingThread.CurrentStatusCd = updatedThread.CurrentStatusCd;
-                    existingThread.RequestedStatusCd = updatedThread.RequestedStatusCd;
-                    existingThread.LastStartedDtTm = updatedThread.LastStartedDtTm;
-                    existingThread.LastStoppedDtTm = updatedThread.LastStoppedDtTm;
-                    existingThread.CurrentProcessingStartDtTm = updatedThread.CurrentProcessingStartDtTm;
-                    existingThread.ReLoadFlg = updatedThread.ReLoadFlg;
-                    existingThread.IsSuccesful = updatedThread.IsSuccesful;
+                    existingThread.CurrentStatusCd = updatedThread.CurrentStatusCode;
+                    existingThread.RequestedStatusCd = updatedThread.RequestedStatusCode;
+                    existingThread.LastStartedDtTm = updatedThread.LastStarted;
+                    existingThread.LastStoppedDtTm = updatedThread.LastStopped;
+                    existingThread.CurrentProcessingStartDtTm = updatedThread.CurrentProcessingStart;                    
+                    existingThread.IsSuccesful = updatedThread.IsSuccessful;
+                    existingThread.ReLoadFlg = updatedThread.ReloadFlag;
                     await db.SaveChangesAsync(cancellationToken);
                     return true;
                 }
@@ -119,14 +138,14 @@ namespace ServiceManagerRW4
           
         }
 
-        public async  Task<bool> InsertThreadException(T_ThreadExceptionLog threadException, CancellationToken cancellationToken)
+        public async  Task<bool> InsertThreadException(ThreadExceptionLog threadException, CancellationToken cancellationToken)
         {
             try
             {
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
-                    db.T_ThreadExceptionLog.Add(threadException);
+                    db.T_ThreadExceptionLog.Add(new T_ThreadExceptionLog() { SysServiceThreadId=threadException.SysServiceThreadId, CreateDtTm=threadException.CreateDtTm, ThreadException=threadException.ThreadException});
                     await db.SaveChangesAsync(cancellationToken);
                     return true;
                 }

@@ -1,4 +1,4 @@
-using RW4OBDistributorSvc;
+using RW4OBDistributor;
 using ServiceManagerRW4;
 using RW4Entities;
 using Microsoft.EntityFrameworkCore;
@@ -45,14 +45,14 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context,services )=>
     {
         #if DEBUG
-                services.AddHostedService<RWOBDistributorSvc>();
-        #else
+                services.AddHostedService<RW4OBDistributorSvc>();
+#else
                 services.AddWindowsService(options =>
                 {
                     options.ServiceName = "RW4OBDistributor";
                 });
-                services.AddHostedService<RWOBDistributorSvc>();
-        #endif
+                services.AddHostedService<RW4OBDistributorSvc>();
+#endif
 
 
         services.AddSingleton<ServiceManager>();
