@@ -6,26 +6,10 @@ using System.Threading.Tasks;
 
 namespace ServiceManagerRW4
 {
-    interface IServiceThread
+    public interface IServiceManager
     {
-
-        Task InvokeThread(long lSysServiceThread_Id);
-
-        long lThreadId
-        {
-            get;
-        }
-
-        string sThreadStatus
-        {
-            get;
-            set;
-        }
-
-        string sRequestedStatus
-        {
-            get;
-            set;
-        }
+        Task InvokeServiceAsync(CancellationToken cancellationToken);
+        public bool LoadThreads();
     }
+
 }

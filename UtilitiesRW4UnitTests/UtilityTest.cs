@@ -2,14 +2,14 @@
 using NUnit.Framework.Internal;
 using NUnit.Framework;
 
-namespace UtilitiesRW4UnitTests.Common
+namespace UtilitiesRW4UnitTests
 {
     public class UtilityTest
     {
-        private static  Microsoft.Extensions.Logging.ILogger _logger;
+        private static Microsoft.Extensions.Logging.ILogger _logger;
         [SetUp]
         public void Setup()
-        {            
+        {
             ILoggerFactory loggerFactory = new LoggerFactory();
             _logger = loggerFactory.CreateLogger(typeof(RWUtilities.Common.Utility));
         }
@@ -25,10 +25,10 @@ namespace UtilitiesRW4UnitTests.Common
             string strMailServerName = "172.16.200.33";
 
             //Act
-            string result = RWUtilities.Common.Utility.SendMail(_logger,strFrom,strTo,strSubject,strBody, strMailServerName);
+            string result = RWUtilities.Common.Utility.SendMail(_logger, strFrom, strTo, strSubject, strBody, strMailServerName);
 
             //Assert
-            Assert.AreEqual("",result);
+            Assert.AreEqual("", result);
         }
     }
 }

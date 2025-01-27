@@ -24,9 +24,7 @@ namespace RW4OBDistributorProcess
         #region "Declarations"
 
      
-      
-        private readonly IConfiguration? _configuration;
-
+    
        
         string? WamSubscriptionBaseUrl;
         string? WAMauthenticationURL_RequestData;
@@ -36,31 +34,32 @@ namespace RW4OBDistributorProcess
         public const int ParamId = 11; // Token will be shared between telemetry and subscription API
         string? subsciptionaddedDays;
         string? WamConsumerKey;
+        string? logPath;
 
         public const string WAMAuthAPICallMaxCount = "WAMAuthAPICallMaxCount";
         public const string WAMAuthAPICallCurrentCount = "WAMAuthAPICallCurrentCount";
         public const string WAMAuthAPICallCurrentCountLstUpdTime = "WAMAuthAPICallCurrentCountLstUpdTime";
 
-       readonly SQLDBHelper? sqlDBHelper;
+       readonly OBDBHelper? sqlDBHelper;
         private ILogger _logger;
 
         #endregion
 
-        public WAMDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
+        public WAMDataSubscription(IConfiguration configuration, ILogger<WAMDataSubscription> logger, OBDBHelper oBDBHelper)
         {
             try
-            {
-                _configuration = configuration;
+            {               
                 _logger = logger;
-                sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
-                WamSubscriptionBaseUrl = _configuration["appSettings:WamSubscriptionBaseUrl"]; 
-                WAMauthenticationURL_RequestData = _configuration["appSettings:WAMauthenticationURLRequestData"];
-                WAMAPIExceedAlertTopic = _configuration["appSettings:WAMAPIExceedAlertTopic"]; 
-                WAMAPIExceedAlertSub = _configuration["appSettings:WAMAPIExceedAlertSub"]; 
-                authentication_URL = _configuration["appSettings:WAMauthenticationURL"];
-                subsciptionaddedDays = _configuration["appSettings:subsciptionaddedDays"]; 
-                WamConsumerKey = _configuration["appSettings:WamConsumerKey"];
+                sqlDBHelper = oBDBHelper;
+                WamSubscriptionBaseUrl = configuration["appSettings:WamSubscriptionBaseUrl"]; 
+                WAMauthenticationURL_RequestData = configuration["appSettings:WAMauthenticationURLRequestData"];
+                WAMAPIExceedAlertTopic = configuration["appSettings:WAMAPIExceedAlertTopic"]; 
+                WAMAPIExceedAlertSub = configuration["appSettings:WAMAPIExceedAlertSub"]; 
+                authentication_URL = configuration["appSettings:WAMauthenticationURL"];
+                subsciptionaddedDays = configuration["appSettings:subsciptionaddedDays"]; 
+                WamConsumerKey = configuration["appSettings:WamConsumerKey"];
                 RWUtilities.Common.Utility.connectionString = configuration["appSettings:AzurePrimaryConnectionString"];
+                logPath = configuration["appSettings:logpath"];
             }
             catch (Exception ex)
             {
@@ -129,7 +128,6 @@ namespace RW4OBDistributorProcess
                 _logger.LogError("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
             }
         }
-
         public bool AzureProcessOutbound(string eventCd, long eventID, string UnitId, string messagebody, long threadID)
         {
             bool isSuccess = true;
@@ -209,8 +207,6 @@ namespace RW4OBDistributorProcess
         }
 
         #endregion
-
-
 
         #region WAM Latest
 
@@ -315,8 +311,6 @@ namespace RW4OBDistributorProcess
                 throw ex;
             }
         }
-
-
         public void UpdateDataWAMSubscription(T_WAMDataSubscription subscription, string JwtToken, long threadID)
         {
             bool isApiTokenExpire = false;
@@ -427,8 +421,6 @@ namespace RW4OBDistributorProcess
                 throw ex;
             }
         }
-
-
         public void DeleteDataWAMSubscription(T_WAMDataSubscription subscription, string JwtToken, long threadID)
         {
 
@@ -527,9 +519,6 @@ namespace RW4OBDistributorProcess
                 throw;
             }
         }
-
-
-
         public string GetJwtToken(long threadID)
         {
             string accessToken = string.Empty;
@@ -576,8 +565,6 @@ namespace RW4OBDistributorProcess
 
             return accessToken;
         }
-
-
         public bool IsTokenExpired(string token)
         {
             try
@@ -604,9 +591,6 @@ namespace RW4OBDistributorProcess
             // Token is not expired
             return false;
         }
-
-
-
         public bool IsWamAuthCallLimitExceeded()
         {
             try
@@ -646,13 +630,11 @@ namespace RW4OBDistributorProcess
                 return false;
             }
         }
-
-
         public void CreateSubscriptionExpection(string message, string method)
         {
             try
             {
-                string logPath = _configuration?["appSettings:logpath"]; 
+               
                 System.IO.StreamWriter logFile = new System.IO.StreamWriter(logPath + "WamSubscriptionExpection_" + DateTime.Today.ToString(" MMM yyyy") + ".txt", true);
 
                 logFile.WriteLine();

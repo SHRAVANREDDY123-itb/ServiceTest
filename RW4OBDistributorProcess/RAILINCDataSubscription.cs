@@ -36,20 +36,20 @@ namespace RW4OBDistributorProcess
         public const string SubscripName = "SubscripName";
         public const string IsBatchProcess = "IsBatchProcess";
         public const string BatchMsgCount = "BatchMsgCount";
-        readonly SQLDBHelper? sqlDBHelper;
+        readonly OBDBHelper? sqlDBHelper;
         private ILogger _logger;
 
 
 
         #endregion
 
-        public RAILINCDataSubscription(IConfiguration configuration, IServiceProvider serviceProvider, ILogger logger)
+        public RAILINCDataSubscription(IConfiguration configuration, ILogger<RAILINCDataSubscription> logger, OBDBHelper oBDBHelper)
         {
             try
             {
                 _logger = logger;
                 _logger.LogInformation("RAILINCDataSubscription constructor");
-                sqlDBHelper = serviceProvider.GetRequiredService<SQLDBHelper>();
+                sqlDBHelper = oBDBHelper;                
                 filePath = sqlDBHelper.GetSysParamValues(CompanyName, SysParamCd, 5);
                 strEvendCd = configuration["appSettings:" + EvendCd];
                 RWUtilities.Common.Utility.connectionString = configuration["appSettings:AzurePrimaryConnectionString"];
@@ -61,9 +61,6 @@ namespace RW4OBDistributorProcess
                 _logger.LogError(ex.ToString());
             }
         }
-
-
-
 
         #region  Azure Railinc Processing 
        
@@ -124,7 +121,6 @@ namespace RW4OBDistributorProcess
                 _logger.LogError(ex.ToString());
             }
         }
-
         public bool AzureProcessOutbound(string eventCd, long eventID, string unitNumber, int messageCount)
         {
             bool isSuccess = false;
@@ -216,7 +212,6 @@ namespace RW4OBDistributorProcess
             }
             return isSuccess;
         }
-
         public void AzureProcessRailINCDataStop(long threadID)
         {
             try
@@ -272,7 +267,6 @@ namespace RW4OBDistributorProcess
                 _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID, ex);
             }
         }
-
         public bool AzureProcessStopOutbound(string eventCd, long eventID, string unit)
         {
             bool isSuccess = false;

@@ -2,7 +2,6 @@
    "CodeGenerationMode": 3,
    "ContextClassName": "RW3PRODDB2Context",
    "ContextNamespace": null,
-   "DefaultDacpacSchema": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "ModelNamespace": null,
@@ -16,56 +15,17 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[R_EventMaster]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[R_SysServiceThreadParams]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[R_UnitMaster]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_Events]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_PreNoteEvents]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_PreNotes]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_PreNoteUnitEvents]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_PreNoteUnits]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_RailincCERLog]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_UnitCurrentCondition]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[T_UnitEvents]",
+         "Name": "[dbo].[R_SysService]",
          "ObjectType": 0
       }
    ],
-   "UiHint": "rw-prod-db1\\rw3proddb1.RW3PRODDB2.dbo",
+   "UiHint": null,
    "UncountableWords": null,
    "UseBoolPropertiesWithoutDefaultSql": false,
    "UseDatabaseNames": true,
    "UseDateOnlyTimeOnly": false,
    "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
    "UseFluentApiOnly": false,
    "UseHandleBars": false,
    "UseHierarchyId": false,
@@ -77,6 +37,7 @@
    "UseNoObjectFilter": false,
    "UseNodaTime": false,
    "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
    "UseSchemaFolders": false,
    "UseSchemaNamespaces": false,
    "UseSpatial": false,

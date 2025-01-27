@@ -23,7 +23,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging((hostcontext, logger) =>
     {
         #if DEBUG
-                logger.ClearProviders().AddConsole();
+                logger.ClearProviders().AddConsole().AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning); ;
         #else
         #pragma warning disable CA1416 // Validate platform compatibility 
                 logger.ClearProviders()
@@ -56,23 +56,21 @@ IHost host = Host.CreateDefaultBuilder(args)
 
 
         services.AddSingleton<ServiceManager>();
-        services.AddSingleton<ServiceThread>();
-        services.AddSingleton<ServiceDB>();
+        services.AddSingleton<ServiceManagerDBHelper>();
+        services.AddSingleton<OBDBHelper>();
+        services.AddScoped<RAILINCDataSubscription>();
+
+        services.AddScoped<WAMDataSubscription>();
 
         IConfiguration configuration = context.Configuration;
        
         string? sConnectString = configuration["appSettings:DBConnectionName"];
-        DbContextOptionsBuilder<RWOBDistributorsEntities> dbContextOptionsBuilderobdb = new DbContextOptionsBuilder<RWOBDistributorsEntities>();
-        dbContextOptionsBuilderobdb.UseSqlServer(sConnectString);
+      
+        services.AddDbContext<RWOBDistributorsEntities>(options =>
+                       options.UseSqlServer(sConnectString).EnableSensitiveDataLogging(false));
 
-        DbContextOptionsBuilder<RWServiceManagerEntities> dbContextOptionsBuilderdb = new DbContextOptionsBuilder<RWServiceManagerEntities>();
-        dbContextOptionsBuilderdb.UseSqlServer(sConnectString);
-
-
-        services.AddSingleton(new SQLDBHelper( 
-                              
-                              new RWOBDistributorsEntities(dbContextOptionsBuilderobdb.Options),
-                              new RWServiceManagerEntities(dbContextOptionsBuilderdb.Options)));
+        services.AddDbContext<RWServiceManagerEntities>(options =>
+                      options.UseSqlServer(sConnectString));
 
 
 
