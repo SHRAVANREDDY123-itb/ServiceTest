@@ -17,26 +17,10 @@ namespace ServiceManagerRW4
 {
 
 
-
-
-
-    public interface IServiceManager
-    {
-        Task InvokeServiceAsync(CancellationToken cancellationToken);
-    }
-
-
-
-
-
-
-
-
     public class ServiceManager : IServiceManager
     {
 
-        private readonly ILogger _logger;
-        private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;      
         private readonly IServiceProvider _serviceProvider;
 
         private ConcurrentBag<long> ThreadIds = new ConcurrentBag<long>();
@@ -46,10 +30,8 @@ namespace ServiceManagerRW4
 
         public ServiceManager(ILogger<ServiceManager> logger, IConfiguration configuration, IServiceProvider serviceProvider, ServiceManagerDBHelper serviceManagerDBHelper)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));          
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
             _dbHelper = serviceManagerDBHelper ?? throw new ArgumentNullException(nameof(serviceManagerDBHelper));
             _assemblyPath = configuration["appSettings:AssemblyPath"]
                 ?? throw new ArgumentException("AssemblyPath is not configured.", nameof(configuration));
@@ -115,9 +97,7 @@ namespace ServiceManagerRW4
             {
                 _logger.LogError(ex, "Error in thread {ThreadId}", ThreadId);
             }
-        }
-
-       
+        }       
 
         private async Task<bool> InvokeAssembly(string AssemblyFullName, long ThreadId, CancellationToken cancellationToken)
         {
@@ -159,15 +139,22 @@ namespace ServiceManagerRW4
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var scopedProvider = scope.ServiceProvider;
-
                     var service = scopedProvider.GetService(type);
                     var methodInfo = type.GetMethod(methodName);
                     if (methodInfo == null)
                     {
                         throw new MissingMethodException($"Method not found: {methodName} in type {assemblyName}.{className}");
                     }
+                    await Task.Run(() =>
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                        }
 
-                    await Task.Run(() => methodInfo.Invoke(service, new object[] { ThreadId }));
+                        methodInfo.Invoke(service, new object[] { ThreadId });
+                    }, cancellationToken);
+
                     return true;
                 }
             }
@@ -177,8 +164,6 @@ namespace ServiceManagerRW4
                 return false;
             }
         }
-
-
 
 
     }

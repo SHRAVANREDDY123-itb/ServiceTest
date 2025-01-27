@@ -6,5 +6,10 @@ using System.Threading.Tasks;
 
 namespace ServiceManagerRW4
 {
-    
+    public interface IServiceManager
+    {
+        Task InvokeServiceAsync(CancellationToken cancellationToken);
+        public bool LoadThreads();
+    }
+
 }

@@ -12,18 +12,12 @@ namespace RW4OBDistributorProcess
 {
     public class OBDBHelper
     {
-       
-       
-        //RWOBDistributorsEntities obdb;
-        //RWServiceManagerEntities db;
 
         private readonly IServiceScopeFactory _scopeFactory;
         public OBDBHelper( IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
 
-            //this.obdb = obdb;
-            //this.db = db;
         }
 
 
@@ -436,9 +430,7 @@ namespace RW4OBDistributorProcess
 
                 throw;
             }
-        }
-
-       
+        }       
 
         public List<KeyValuePair<string, string>> GetWAMApiParams(List<string> paramCDs)
         {
