@@ -3,24 +3,17 @@ using ServiceManagerRW4;
 using System.Threading;
 using static System.Formats.Asn1.AsnWriter;
 
-namespace RW4OBDistributorSvc
+namespace RW4OBDistributor
 {
-    public class RWOBDistributorSvc : BackgroundService
+    public class RW4OBDistributorSvc : BackgroundService
     {
-        private readonly ILogger<RWOBDistributorSvc> _logger;
-
+        private readonly ILogger<RW4OBDistributorSvc> _logger;
         private readonly ServiceManager oServiceManager;
 
-
-
-        public RWOBDistributorSvc(ServiceManager serviceManager, ILogger<RWOBDistributorSvc> logger
-                                  )
+        public RW4OBDistributorSvc(ServiceManager serviceManager, ILogger<RW4OBDistributorSvc> logger)
         {
             _logger = logger;
             oServiceManager = serviceManager;
-
-
-
         }
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -28,14 +21,14 @@ namespace RW4OBDistributorSvc
             try
             {
 
-                _logger.LogInformation("RWOBDistributorSvc has started");
+                _logger.LogInformation("RW4OBDistributorSvc has started");
                 if (oServiceManager.LoadThreads())
                 {
                     await base.StartAsync(cancellationToken);
                 }
                 else
                 {
-                    _logger.LogError("RWOBDistributorSvc couldnt load threads");
+                    _logger.LogError("RW4OBDistributorSvc couldnt load threads");
                 }
 
             }
@@ -49,18 +42,14 @@ namespace RW4OBDistributorSvc
         }
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogCritical("RWOBDistributorSvc has stopped");
+            _logger.LogCritical("RW4OBDistributorSvc has stopped");
             return base.StopAsync(cancellationToken);
         }
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-
-
                 await oServiceManager.InvokeServiceAsync(cancellationToken);
-
-
                 await Task.Delay(1000, cancellationToken);
             }
         }

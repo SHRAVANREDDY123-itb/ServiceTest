@@ -1,17 +1,12 @@
 ﻿using DBConstants;
 using Entities.RefData;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RW4Entities;
 using ServiceManagerRW4.Models;
-using System;
 using System.Collections.Concurrent;
-using System.Data;
 using System.Reflection;
 using System.Threading;
-using Utility.DataSetManagement;
 
 namespace ServiceManagerRW4
 {
@@ -68,34 +63,81 @@ namespace ServiceManagerRW4
                     _logger.LogInformation($"{string.Join(",", threadIds)} threads");
                   
                     foreach (var threadId in threadIds) { ThreadIds.Add(threadId); }
+                    return true;
                 }
-                return true;
+                else
+                { return false; }
+               
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError(ex, "Error Loading the threads");
                 return false;
             }
 
         }
 
-        private async Task InvokeThreadAsync(long ThreadId, CancellationToken cancellationToken)
+        private async Task InvokeThreadAsync(long threadId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Invoking thread {ThreadId}", ThreadId);
+            _logger.LogInformation("Invoking thread {ThreadId}", threadId);
+            int? retryCount = 1; 
 
             try
             {
+               
+                SysServiceThread syServiceThreadConfiguration = _dbHelper.GetActiveThreadDetails(threadId);
+                if (syServiceThreadConfiguration == null)
+                {
+                    _logger.LogWarning($"No thread found for thread ID = {threadId}");
+                    return;
+                }
+                else
+                {
+                    syServiceThreadConfiguration.CurrentStatusCode = ServiceStatus.Running;
+                    syServiceThreadConfiguration.CurrentProcessingStart = DateTime.UtcNow;
+                    await _dbHelper.UpdateServiceThreadAsync(syServiceThreadConfiguration, cancellationToken);
+                    retryCount = syServiceThreadConfiguration.RetryCount??1;
+                    bool isSuccess = false;
+                   
+                    for (int i = 0; i < retryCount && !isSuccess; i++)
+                    {
+                        if (i > 0)
+                        {
+                            _logger.LogInformation("Retrying {RetryNumber} for Thread ID {ThreadId} after delay", i, threadId);
+                            await Task.Delay(syServiceThreadConfiguration.SleepTime * 1000, cancellationToken);
+                        }
 
-                SyServiceThreadConfiguration syServiceThreadConfiguration = _dbHelper.GetActiveThreadDetails(ThreadId);
+                        try
+                        {
+                            isSuccess = await InvokeAssembly(syServiceThreadConfiguration.AssemblyFullName, threadId, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Error during retry {RetryNumber} for Thread ID {ThreadId}", i, threadId);
+                            await _dbHelper.InsertThreadException(new ThreadExceptionLog() { CreateDtTm = DateTime.UtcNow, SysServiceThreadId = threadId, ThreadException = ex.ToString() }, cancellationToken);
+                        }
+                    }
+                   
 
-                await InvokeAssembly(syServiceThreadConfiguration.AssemblyFullName, ThreadId, cancellationToken);
+                    syServiceThreadConfiguration.IsSuccessful = isSuccess==true?"Y":"N";
+                    syServiceThreadConfiguration.LastStarted = syServiceThreadConfiguration.CurrentProcessingStart;
+                    syServiceThreadConfiguration.LastStopped = DateTime.UtcNow;
+                    syServiceThreadConfiguration.CurrentProcessingStart = null;
+                    await _dbHelper.UpdateServiceThreadAsync(syServiceThreadConfiguration, cancellationToken);
 
-                await Task.Delay(syServiceThreadConfiguration.ThreadSleepTm * 1000, cancellationToken);
+                    if (!isSuccess)
+                    {
+                        await _dbHelper.InsertThreadException(new ThreadExceptionLog() { CreateDtTm = DateTime.UtcNow, SysServiceThreadId = threadId, ThreadException ="Invoking thread assembly was not succesfull" }, cancellationToken);
+                    }
+
+                    await Task.Delay(syServiceThreadConfiguration.SleepTime * 1000, cancellationToken);
+                }
 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in thread {ThreadId}", ThreadId);
+                _logger.LogError(ex, "Error in thread {ThreadId}", threadId);
+                await _dbHelper.InsertThreadException(new ThreadExceptionLog() { CreateDtTm = DateTime.UtcNow, SysServiceThreadId = threadId, ThreadException = ex.ToString() },cancellationToken);
             }
         }       
 
