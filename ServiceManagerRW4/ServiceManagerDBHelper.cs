@@ -3,7 +3,7 @@ using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using RW4Entities.Models;
 using ServiceManagerRW4.Models;
-using Microsoft.Azure.Amqp.Framing;
+
 
 namespace ServiceManagerRW4
 {
@@ -159,7 +159,30 @@ namespace ServiceManagerRW4
            
         }
 
+        public void TempQuery()
+        {
+            try
+            {
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<RWServiceManagerEntities>();
 
+                 //List<R_SysServiceThreads> r_SysServiceThreads=  db.R_SysServiceThreads.Where(x=>x.SysServiceThreadId==419 || x.SysServiceThreadId == 420).ToList();
+                 //   r_SysServiceThreads.ForEach(x => x.IsActive = "N");
+                 //   db.SaveChanges();
+
+                    db.R_ApplicationParam.Where(x=>x.ParamID==27).FirstOrDefault().Value="1";
+                    db.R_ApplicationParam.Where(x => x.ParamID == 11).FirstOrDefault().Value = "eyJ0eXAiOiJKV1QiLCJraWQiOiJHRkFMUWtWTzFvNFc3YXpweWJ6RjhrOE4wdEk9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJRalRZZnRLSTBtakd5SDNvS2sxYTlMVXF3TXROTXJzSSIsImN0cyI6Ik9BVVRIMl9TVEFURUxFU1NfR1JBTlQiLCJhdWRpdFRyYWNraW5nSWQiOiI4YzU0ZmExMC00ODllLTQ5ZWQtYmRmNS0wMDE0ODhjY2I3MWItNDYwNDk3NDIiLCJzdWJuYW1lIjoiUWpUWWZ0S0kwbWpHeUgzb0trMWE5TFVxd010Tk1yc0kiLCJpc3MiOiJodHRwczovL2lhbS5tYWVyc2suY29tL2FjbS9vYXV0aDIvbWF1IiwidG9rZW5OYW1lIjoiYWNjZXNzX3Rva2VuIiwidG9rZW5fdHlwZSI6IkJlYXJlciIsImF1dGhHcmFudElkIjoiZGxNU28ydG5MdThlVW1rV2h1QzhDR1hWZ2xzIiwiYXVkIjoiUWpUWWZ0S0kwbWpHeUgzb0trMWE5TFVxd010Tk1yc0kiLCJuYmYiOjE3MzgxMjkxNDksImdyYW50X3R5cGUiOiJjbGllbnRfY3JlZGVudGlhbHMiLCJzY29wZSI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNzM4MTI5MTQ5LCJyZWFsbSI6Ii9tYXUiLCJleHAiOjE3MzgxMzYzNDksImlhdCI6MTczODEyOTE0OSwiZXhwaXJlc19pbiI6NzIwMCwianRpIjoiN2NjQy1sSGtRVDljNVdpZDRTQzlRWVR2RUtNIn0.EwNj-C_Bn31FRlSlEoSWj3WkY3qQmJ0tG770Vxkq0Ktuq6c9BjBSytv66vH_anr-JZXDqFS1ec9e_7P3DwOFD322Z2QYbCn6G_6HYL3iLEYF0WjAXn4tDatyqAsgFdvxONMDy7mRWbUYrLwmedH-MXL6CfK8mtnMiI7vdzbHRobw1rSwsIB2ViC4hlrSvrqIbCr81gD6ERcQrQwnIVHcagbcz__fVIHTnF_nzxKHgC_HkxnxIkpgpVDr7p_4nmdYO5uznwwCAj359OgYgjxvkc58fW-5CBo8Wccn4-zb47L5b-bankSXsPwnqFEf-1d3lpXxJ4-fVxKnrYH7msG7-g";
+                    db.SaveChanges();
+
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
     }
 }
