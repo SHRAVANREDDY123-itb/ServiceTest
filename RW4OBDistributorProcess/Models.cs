@@ -9,7 +9,13 @@ using System.Xml.Serialization;
 namespace RW4OBDistributorProcess
 {
 
-
+    public class RailincCER
+    {
+        public long EventId { get; set; }
+        public string FleetCd { get; set; }
+        public string UnitNumber { get; set; }
+        public string FileName { get; set; }
+    }
     public enum Status
     {
         E,//Error       
