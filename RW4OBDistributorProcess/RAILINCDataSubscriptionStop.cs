@@ -8,7 +8,7 @@ using RWUtilities.Common;
 
 namespace RW4OBDistributorProcess
 {
-    public class RAILINCDataSubscription
+    public class RAILINCDataSubscriptionStop
     {
         #region "Declarations"
 
@@ -43,7 +43,7 @@ namespace RW4OBDistributorProcess
 
         #endregion
 
-        public RAILINCDataSubscription(IConfiguration configuration, ILogger<RAILINCDataSubscription> logger, OBDBHelper oBDBHelper)
+        public RAILINCDataSubscriptionStop(IConfiguration configuration, ILogger<RAILINCDataSubscription> logger, OBDBHelper oBDBHelper)
         {
             try
             {
@@ -62,9 +62,9 @@ namespace RW4OBDistributorProcess
             }
         }
 
-        #region  Azure Railinc Processing 
-       
-        public void AzureProcessRailINCData(long threadID)
+        #region  Azure Railinc Processing   
+     
+        public void AzureProcessRailINCDataStop(long threadID)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace RW4OBDistributorProcess
                         if (param.SysParamCd == BatchMsgCount)
                             messageCount = Convert.ToInt32(param.SysParamVal);
                     }
-                   
+
                     List<DistributorJson> messageList = RWUtilities.Common.Utility.GetQueueMessagefromOBSAzureSubscription(topicName, suscriptionName, isBatchProcess, messageCount, _logger).Result;
                     if (messageList != null && messageList.Count > 0)
                     {
@@ -97,18 +97,17 @@ namespace RW4OBDistributorProcess
                             {
                                 if (json != null)
                                 {
-                                    bool isSuccess = false;
-                                    isSuccess = AzureProcessOutbound(json.TriggerCd, Convert.ToInt64(json.TriggerID), json.Unit, messageList.Count);
+                                    bool isSuccess = AzureProcessStopOutbound(json.TriggerCd, Convert.ToInt64(json.TriggerID), json.Unit);
                                     if (isSuccess)
                                         RWUtilities.Common.Utility.DeleteMessagebasedonProperties(topicName, suscriptionName, nameof(json.TriggerID), json.TriggerID, _logger).Wait();
+
 
                                 }
                             }
                             catch (Exception ex)
                             {
 
-                                _logger.LogError("AzureProcessRailINCData --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
-                                // CreateCargoCareExpection("Auto Accepted Thread Id" + threadID + "Error Message: " + ex.Message + "Error StackTrace: " + ex.StackTrace + "Inner Expection" + ex.InnerException, "MonitorUserDefinedCCInspFromAzure", json.Json);
+                                _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
                             }
                         }
                     }
@@ -117,73 +116,77 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-
-                _logger.LogError(ex.ToString());
+                _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID, ex);
             }
         }
-        public bool AzureProcessOutbound(string eventCd, long eventID, string unitNumber, int messageCount)
+        public bool AzureProcessStopOutbound(string eventCd, long eventID, string unit)
         {
             bool isSuccess = false;
             try
             {
-
                 TextWriter tw;
-                
+               
                 DateTime dt = System.DateTime.UtcNow;
                 string date = dt.ToString(DateFormat);
-                filePath = filePath + FileName + date + Prefix + FileExtension;
+                filePath = filePath + FileName + date + StopPrefix + FileExtension;
 
                 FileStream fs1 = null;
                 StreamWriter writer = null;
                 List<string> lstUnits = new List<string>();
+                int cnt = 0;
                 List<RailincCER> lstRailincCER = new List<RailincCER>();
-               
+                
                 string[] eventCds = strEvendCd.Split(',');
                 
-                if (eventCds.Contains(eventCd))
+                if (!string.IsNullOrEmpty(unit))
                 {
-                    
-                    if (!string.IsNullOrEmpty(unitNumber))
+                    List<Usp_GetActivePendingPrenoteUnit_Result> activePendigPrenoteUnits = sqlDBHelper?.GetActivePendingPrenotUnit(unit);
+                    var unitNumber = unit.Length >= 10 ? unit.Substring(0, 10) : unit;
+                    if ((activePendigPrenoteUnits != null && activePendigPrenoteUnits.Count != 0))
                     {
-                       
-                        USP_GetPreNoteUnitStatusByEventId_Result unitStatus = sqlDBHelper?.GetPreNoteUnitStatusByEventId(eventID);
-                        if (unitStatus != null && (unitStatus.PreNoteUnitStatusCd == RW4Entities.DBConstants.PreNoteUnitStatus.Pending || unitStatus.PreNoteUnitStatusCd == RW4Entities.DBConstants.PreNoteUnitStatus.Active)
-                            && !lstUnits.Contains(unitNumber.Substring(0, 10)))
+                        return isSuccess;
+                    }
+                 
+                    if ((activePendigPrenoteUnits == null || activePendigPrenoteUnits.Count == 0) && !lstUnits.Contains(unitNumber))
+                    {
+                        cnt++;
+                        if (fs1 == null)
                         {
-                            if (fs1 == null)
-                            {
-                                fs1 = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
-                                if (writer == null)
-                                    writer = new StreamWriter(fs1);
-                                string dateHr = dt.ToString(DateFormatHr);
-                                writer.WriteLine(HeaderName + dateHr + messageCount);
-                            }
-                            // The tag could not be fond
-                            string UnitId = Prefix + unitNumber.Substring(0, 10);
-                            writer.WriteLine(UnitId);
-                            lstUnits.Add(unitNumber.Substring(0, 10));
-
-                         
-                            try
-                            {
-                                
-                                RailincCER railincCER = new RailincCER();
-                                railincCER.EventId = eventID;
-                                railincCER.UnitNumber = unitNumber.Substring(0, 10);
-                                railincCER.FleetCd = Prefix;
-                                railincCER.FileName = FileName + date + Prefix + FileExtension;
-                                lstRailincCER.Add(railincCER);
-                            }
-                            catch (Exception ex)
-                            {
-                                // isSuccess = false;
-                                _logger.LogError(ex.ToString());
-                                //throw;
-                            }
+                            fs1 = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+                            if (writer == null)
+                                writer = new StreamWriter(fs1);
+                            //string dateHr = dt.ToString(DateFormatHr);
+                            string dateHr = dt.ToString(DateFormatHrForStop);
+                            writer.WriteLine(HeaderName + dateHr);
+                           
                         }
+                      
+                        string UnitId = StopPrefix + unitNumber;
+                        writer.WriteLine(UnitId);
+                       
+                        lstUnits.Add(unitNumber);
+
+                       
+                        try
+                        {
+                           
+                            RailincCER railincCER = new RailincCER();
+                            railincCER.EventId = eventID; //Convert.ToInt64(TriggerIDLTag[0].InnerText);
+                                                          // railincCER.UnitNumber = UnitIdTag[0].InnerText.Substring(0, 10);
+                            railincCER.UnitNumber = unitNumber;
+                            railincCER.FleetCd = StopPrefix;
+                            railincCER.FileName = FileName + date + StopPrefix + FileExtension;
+                            lstRailincCER.Add(railincCER);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex.ToString());
+                            //throw;
+                        }
+
                     }
                 }
-                // }
+              
                 if (writer != null)
                 {
                     writer.WriteLine(EndLine);
@@ -212,7 +215,6 @@ namespace RW4OBDistributorProcess
             }
             return isSuccess;
         }
-      
         #endregion
 
 
@@ -230,5 +232,5 @@ namespace RW4OBDistributorProcess
         }
     }
 
-   
+    
 }
