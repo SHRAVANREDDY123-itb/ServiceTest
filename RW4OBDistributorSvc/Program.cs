@@ -23,7 +23,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging((hostcontext, logger) =>
     {
         #if DEBUG
-                logger.ClearProviders().AddConsole().AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning); ;
+                logger.ClearProviders().AddConsole().AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning); 
         #else
         #pragma warning disable CA1416 // Validate platform compatibility 
                 logger.ClearProviders()
@@ -37,9 +37,9 @@ IHost host = Host.CreateDefaultBuilder(args)
                            }
 
 
-                       });
-        #pragma warning restore CA1416
-        #endif
+                       }).AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning); 
+#pragma warning restore CA1416
+#endif
 
     })
     .ConfigureServices((context,services )=>
