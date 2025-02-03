@@ -50,7 +50,7 @@ namespace RW4OBDistributor
             while (!cancellationToken.IsCancellationRequested)
             {
                 await oServiceManager.InvokeServiceAsync(cancellationToken);
-                await Task.Delay(1000, cancellationToken);
+                
             }
         }
     }
