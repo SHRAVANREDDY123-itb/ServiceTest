@@ -108,6 +108,7 @@ namespace RW4OBDistributorProcess
                             {
 
                                 _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID + " and messageFaild" + json.Json, ex);
+                                _logger.LogError($"Error in AzureProcessRailINCDataStop, error message {ex.Message}, stracktrace {ex.StackTrace}");
                             }
                         }
                     }
@@ -117,6 +118,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
                 _logger.LogError("AzureProcessRailINCDataStop --ThreadId " + threadID, ex);
+                _logger.LogError($"Error in AzureProcessRailINCDataStop, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
         }
         public bool AzureProcessStopOutbound(string eventCd, long eventID, string unit)
@@ -180,7 +182,7 @@ namespace RW4OBDistributorProcess
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex.ToString());
+                            _logger.LogError($"Error in AzureProcessStopOutbound, error message {ex.Message}, stracktrace {ex.StackTrace}");
                             //throw;
                         }
 
@@ -203,7 +205,7 @@ namespace RW4OBDistributorProcess
                 catch (Exception ex)
                 {
                     isSuccess = false;
-                    _logger.LogError(ex.ToString());
+                    _logger.LogError($"Error in AzureProcessStopOutbound, error message {ex.Message}, stracktrace {ex.StackTrace}");
                     //throw;
                 }
                 // }
@@ -226,7 +228,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in DeriveRailincCERLog, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 //throw;
             }
         }

@@ -63,7 +63,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in WAMDataSubscription constructor, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
         }
 
@@ -125,7 +125,8 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex);
+                _logger.LogError("ProcessWAMDataSubscriptionFromAzure --ThreadId " + threadID, ex.Message);
+                _logger.LogError($"Error in ProcessWAMDataSubscriptionFromAzure, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
         }
         public bool AzureProcessOutbound(string eventCd, long eventID, string UnitId, string messagebody, long threadID)
@@ -198,10 +199,10 @@ namespace RW4OBDistributorProcess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 isSuccess = false;
-                throw ex;
+                throw;
             }
             return isSuccess;
         }
@@ -308,7 +309,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
                 CreateSubscriptionExpection("WAM Data Subriction Error. Message: " + ex.Message + "Error StackTrace: " + ex.StackTrace + "Inner Expection" + ex.InnerException, "Create PostAsync service request");
-                throw ex;
+                throw;
             }
         }
         public void UpdateDataWAMSubscription(T_WAMDataSubscription subscription, string JwtToken, long threadID)
@@ -418,7 +419,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
                 CreateSubscriptionExpection("WAM Data Subriction Error. Message: " + ex.Message + "Error StackTrace: " + ex.StackTrace + "Inner Expection" + ex.InnerException, "Create PutAsync service request");
-                throw ex;
+                throw;
             }
         }
         public void DeleteDataWAMSubscription(T_WAMDataSubscription subscription, string JwtToken, long threadID)
@@ -559,8 +560,8 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                sqlDBHelper?.InsertThreadExceptions(threadID, "Authentication Error:" + ex.InnerException.InnerException.Message.ToString(), DateTime.Now);
-                _logger.LogError(ex.ToString());
+                sqlDBHelper?.InsertThreadExceptions(threadID, "Authentication Error:" + ex.Message.ToString(), DateTime.Now);
+                _logger.LogError($"Error in GetJwtToken, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
 
             return accessToken;
@@ -584,7 +585,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in IsTokenExpired, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 return true;
             }
 
@@ -626,7 +627,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in IsWamAuthCallLimitExceeded, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 return false;
             }
         }
@@ -646,8 +647,9 @@ namespace RW4OBDistributorProcess
 
                 logFile.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in CreateSubscriptionExpection, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 //throw;
             }
 
