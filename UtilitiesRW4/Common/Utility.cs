@@ -83,7 +83,7 @@ namespace RWUtilities.Common
                 else
                 {
                     ServiceBusReceiver receiver = obSubscriptionClient.CreateReceiver(topicName, subscriptionName);
-                    ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync( TimeSpan.FromSeconds(30));
+                    ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync(ReceiveTimeout);
                     
                         if (receivedMessage != null)
                         {
