@@ -118,7 +118,7 @@ namespace RW4OBDistributorProcess
             catch (Exception ex)
             {
 
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in AzureProcessRailINCData, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
         }
         public bool AzureProcessOutbound(string eventCd, long eventID, string unitNumber, int messageCount)
@@ -177,7 +177,7 @@ namespace RW4OBDistributorProcess
                             catch (Exception ex)
                             {
                                 // isSuccess = false;
-                                _logger.LogError(ex.ToString());
+                                _logger.LogError($"Error in AzureProcessOutbound, error message {ex.Message}, stracktrace {ex.StackTrace}");
                                 //throw;
                             }
                         }
@@ -200,15 +200,15 @@ namespace RW4OBDistributorProcess
                 catch (Exception ex)
                 {
                     isSuccess = false;
-                    _logger.LogError(ex.ToString());
+                    _logger.LogError($"Error in AzureProcessOutbound, error message {ex.Message}, stracktrace {ex.StackTrace}");
                     //throw;
                 }
                 // }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 isSuccess = false;
-                throw ex;
+                throw;
             }
             return isSuccess;
         }
@@ -224,7 +224,7 @@ namespace RW4OBDistributorProcess
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                _logger.LogError($"Error in DeriveRailincCERLog, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 //throw;
             }
         }

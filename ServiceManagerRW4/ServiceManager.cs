@@ -47,7 +47,7 @@ namespace ServiceManagerRW4
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error invoking service {ServiceCode}", _serviceCode);
+                _logger.LogError($"Error in InvokeServiceAsync {_serviceCode}, error message {ex.Message}, stracktrace {ex.StackTrace}");              
 
             }
         }
@@ -71,7 +71,7 @@ namespace ServiceManagerRW4
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error Loading the threads");
+                _logger.LogError($"Error in LoadThreads, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 return false;
             }
 
@@ -136,7 +136,7 @@ namespace ServiceManagerRW4
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in thread {ThreadId}", threadId);
+                _logger.LogError($"Error in InvokeThreadAsync with threadID {threadId}, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 await _dbHelper.InsertThreadException(new ThreadExceptionLog() { CreateDtTm = DateTime.UtcNow, SysServiceThreadId = threadId, ThreadException = ex.ToString() },cancellationToken);
             }
         }       
@@ -202,7 +202,7 @@ namespace ServiceManagerRW4
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing method {AssemblyFullName}");
+                _logger.LogError($"Error in InvokeAssembly with assembly {AssemblyFullName}, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 return false;
             }
         }

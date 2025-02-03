@@ -36,8 +36,7 @@ namespace RWUtilities.Common
             catch (Exception ex)
             {
 
-                logger.LogError(ex.ToString());
-                //throw ex;
+                logger.LogError($"Error in SendMessageToAzureSubscription, error message {ex.Message}, stracktrace {ex.StackTrace}");
             }
         }
 
@@ -113,7 +112,7 @@ namespace RWUtilities.Common
             }
             catch (Exception ex)
             {
-                logger.LogError("ABS Get Method: " + "Subscription Name:" + subscriptionName, ex.InnerException);
+                logger.LogError($"Error in GetQueueMessagefromOBSAzureSubscription, subscription name {subscriptionName}, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 throw;
             }
             return msgList.ToList();
@@ -135,7 +134,7 @@ namespace RWUtilities.Common
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.ToString());
+                logger.LogError($"Error in DeleteMessagebasedonProperties, error message {ex.Message}, stracktrace {ex.StackTrace}");
                 throw;
             }
            
@@ -181,7 +180,8 @@ namespace RWUtilities.Common
             catch (Exception ex)
             {
                 logger.LogError("ToEmailId: " + strTo + " Subject: " + strSubject + " Exception: " + ex);
-                return "ToEmailId: " + strTo + " Subject: " + strSubject + " Exception: " + ex;
+                logger.LogError($"Error in SendMail, error message {ex.Message}, stracktrace {ex.StackTrace}");
+                return "ToEmailId: " + strTo + " Subject: " + strSubject + " Exception: " + ex.Message;
             }
         }
 
