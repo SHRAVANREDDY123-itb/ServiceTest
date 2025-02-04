@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using RW4Entities.Models;
+using RW4Entities.Models.RWOBDistributorsEntities;
 using RW4Entities.Models.RWServiceManagerEntities;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace RW4Entities
         public virtual DbSet<R_ApplicationParam> R_ApplicationParam { get; set; }
         public virtual DbSet<R_SysServiceThreads> R_SysServiceThreads { get; set; }
         public virtual DbSet<T_ThreadExceptionLog> T_ThreadExceptionLog { get; set; }
+        public virtual DbSet<T_WAMDataSubscription> T_WAMDataSubscription { get; set; }
         public virtual int TSP_ThreadExceptionLogIns(long? ipSysServiceThread_Id, string ipThreadException, DateTime? ipCreate_DtTm, out long op_SysServiceThreadLog_Id)
         {
             var ipSysServiceThread_IdParameter = ipSysServiceThread_Id.HasValue ?
