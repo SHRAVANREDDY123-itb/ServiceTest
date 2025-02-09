@@ -13,6 +13,6 @@ namespace RW4Entities.Models.RWBNSFTelemetryEntities
         public long UnitMasterId { get; set; }
         public long PrenoteId { get; set; }
         public Nullable<System.Guid> WamSubscriptionGuid { get; set; }
-        public string APIStartDttm { get; set; }
+        public string? APIStartDttm { get; set; }
     }
 }
