@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RW4BNSFTemeletry\RW4BNSFTelemetry.csproj" />
     <ProjectReference Include="..\RW4OBDistributorProcess\RW4OBDistributorProcess.csproj" />
   </ItemGroup>
 
