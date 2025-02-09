@@ -48,7 +48,7 @@ namespace RW4Entities
         }
 
       
-        public virtual IQueryable<string> Usp_GetWamApiTokenByParamCd(int? paramId)
+        public virtual IEnumerable<string> Usp_GetWamApiTokenByParamCd(int? paramId)
         {
             var paramIdParameter = paramId.HasValue ?
                 new SqlParameter("@ParamId", paramId) :
@@ -58,29 +58,30 @@ namespace RW4Entities
                 
         }
 
-        public virtual int USP_UpdateWAMDataSubscriptionForAPIStartDt(Nullable<System.Guid> wamSubsriptionGuid, Nullable<long> prenoteId, Nullable<long> unitMasterId, string appiStartDttm)
+        public virtual int USP_UpdateWAMDataSubscriptionForAPIStartDt(     Nullable<System.Guid> wamSubsriptionGuid,
+     Nullable<long> prenoteId,
+     Nullable<long> unitMasterId,
+     string appiStartDttm)
         {
-            var wamSubsriptionGuidParameter = wamSubsriptionGuid.HasValue ?
-                new SqlParameter("WamSubsriptionGuid", wamSubsriptionGuid) :
-                new SqlParameter("WamSubsriptionGuid", typeof(System.Guid));
+            var wamSubsriptionGuidParameter = new SqlParameter("@WamSubsriptionGuid",
+                wamSubsriptionGuid.HasValue ? (object)wamSubsriptionGuid.Value : DBNull.Value);
 
-            var prenoteIdParameter = prenoteId.HasValue ?
-                new SqlParameter("PrenoteId", prenoteId) :
-                new SqlParameter("PrenoteId", typeof(long));
+            var prenoteIdParameter = new SqlParameter("@PrenoteId",
+                prenoteId.HasValue ? (object)prenoteId.Value : DBNull.Value);
 
-            var unitMasterIdParameter = unitMasterId.HasValue ?
-                new SqlParameter("UnitMasterId", unitMasterId) :
-                new SqlParameter("UnitMasterId", typeof(long));
+            var unitMasterIdParameter = new SqlParameter("@UnitMasterId",
+                unitMasterId.HasValue ? (object)unitMasterId.Value : DBNull.Value);
 
-            var appiStartDttmParameter = appiStartDttm != null ?
-                new SqlParameter("AppiStartDttm", appiStartDttm) :
-                new SqlParameter("AppiStartDttm", typeof(string));
+            var appiStartDttmParameter = new SqlParameter("@AppiStartDttm",
+                !string.IsNullOrEmpty(appiStartDttm) ? (object)appiStartDttm : DBNull.Value);
 
-            return Database.ExecuteSqlRaw("USP_UpdateWAMDataSubscriptionForAPIStartDt", wamSubsriptionGuidParameter, prenoteIdParameter, unitMasterIdParameter, appiStartDttmParameter);
+            return Database.ExecuteSqlRaw(
+                "EXEC USP_UpdateWAMDataSubscriptionForAPIStartDt @WamSubsriptionGuid, @PrenoteId, @UnitMasterId, @AppiStartDttm",
+                wamSubsriptionGuidParameter, prenoteIdParameter, unitMasterIdParameter, appiStartDttmParameter);
         }
 
 
-      
+
 
 
     }
