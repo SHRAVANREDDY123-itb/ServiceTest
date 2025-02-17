@@ -147,8 +147,7 @@ namespace RW4OBDistributorProcess
                     if ((activePendigPrenoteUnits != null && activePendigPrenoteUnits.Count != 0))
                     {
                         //We do not create any D fleet for active prenotes 
-                        //13-02-2025 - KAMAL
-                        return isSuccess=false;
+                        return isSuccess=true;
                     }
                  
                     if ((activePendigPrenoteUnits == null || activePendigPrenoteUnits.Count == 0) && !lstUnits.Contains(unitNumber))

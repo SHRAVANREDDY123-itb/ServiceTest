@@ -394,23 +394,17 @@ namespace RW4OBDistributorProcess
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            //Changes done by - KAMAL
-                            //Status = "E";
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                //_logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "Update PutAsync service request");
                             }
                         }
                         else if (response.StatusCode == HttpStatusCode.BadRequest)
                         {
-                            //Changes done by - KAMAL
-                            //Status = "E";
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                               // _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "Update PutAsync service request");
                             }
                         }
@@ -497,20 +491,13 @@ namespace RW4OBDistributorProcess
                         }
                         else if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            //Changes done by - KAMAL
-                            //Status = "E";
-                            //_logger.LogError("WAM Data Subriction Error. ErrorCd: " + "url not found");
-                            //CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "url not found", "DeleteAsync service request");
                             CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "HTTPS Status code is not found", "DeleteAsync service request");
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            //Changes done by - KAMAL
-                            //Status = "E";
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                //_logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "DeleteAsync service request");
                             }
                         }
