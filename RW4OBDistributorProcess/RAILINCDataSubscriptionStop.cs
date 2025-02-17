@@ -146,7 +146,8 @@ namespace RW4OBDistributorProcess
                     var unitNumber = unit.Length >= 10 ? unit.Substring(0, 10) : unit;
                     if ((activePendigPrenoteUnits != null && activePendigPrenoteUnits.Count != 0))
                     {
-                        return isSuccess;
+                        //We do not create any D fleet for active prenotes 
+                        return isSuccess=true;
                     }
                  
                     if ((activePendigPrenoteUnits == null || activePendigPrenoteUnits.Count == 0) && !lstUnits.Contains(unitNumber))

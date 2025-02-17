@@ -20,12 +20,12 @@ namespace RW4OBDistributorProcess
 {
     public class WAMDataSubscription
     {
-
+   
         #region "Declarations"
 
-     
-    
-       
+
+
+
         string? WamSubscriptionBaseUrl;
         string? WAMauthenticationURL_RequestData;
         string? authentication_URL;
@@ -394,12 +394,17 @@ namespace RW4OBDistributorProcess
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
                         {
-
-                            Status = "E";
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
+                                CreateSubscriptionExpection("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "Update PutAsync service request");
+                            }
+                        }
+                        else if (response.StatusCode == HttpStatusCode.BadRequest)
+                        {
+                            WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
+                            if (wamSubscriptionError != null)
+                            {
                                 CreateSubscriptionExpection("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + " Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "Update PutAsync service request");
                             }
                         }
@@ -447,9 +452,9 @@ namespace RW4OBDistributorProcess
                         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JwtToken);
                         HttpResponseMessage response = new HttpResponseMessage();
                         try
-                        {
-                            response = client.DeleteAsync("api/equipmentwatch/subscribe?subscriberId=" + subscription.WamSubscriptionGuid).Result;
-                        }
+                        { 
+                                  response = client.DeleteAsync("api/equipmentwatch/subscribe?subscriberId=" + subscription.WamSubscriptionGuid).Result;
+                         }
                         catch (Exception ex)
                         {
                             if (response.StatusCode == HttpStatusCode.OK && response.Content == null)
@@ -486,17 +491,13 @@ namespace RW4OBDistributorProcess
                         }
                         else if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            Status = "E";
-                            _logger.LogError("WAM Data Subriction Error. ErrorCd: " + "url not found");
-                            CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "url not found", "DeleteAsync service request");
+                            CreateSubscriptionExpection("WAM Data Subriction Error. ErrorCd: " + "HTTPS Status code is not found", "DeleteAsync service request");
                         }
                         else if (response.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            Status = "E";
                             WamSubscriptionError wamSubscriptionError = JsonConvert.DeserializeObject<WamSubscriptionError>(response.Content.ReadAsStringAsync().Result);
                             if (wamSubscriptionError != null)
                             {
-                                _logger.LogError("WAM Data Subriction  Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace);
                                 CreateSubscriptionExpection("WAM Data Subriction Error . Message: " + wamSubscriptionError.Message + "Error. ExceptionMessage: " + wamSubscriptionError.ExceptionMessage + "Error Description: " + wamSubscriptionError.StackTrace, "DeleteAsync service request");
                             }
                         }
@@ -656,6 +657,6 @@ namespace RW4OBDistributorProcess
         }
 
 
-        #endregion
+     #endregion
     }
 }
