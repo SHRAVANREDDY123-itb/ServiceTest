@@ -317,7 +317,7 @@ namespace RW4OBDistributorProcess
             bool isApiTokenExpire = false;
             try
             {
-                string Status = "";
+                string Status = subscription.StatusCd;
                 Int64 subscriptionId = 0;
                 string subscriptionGuid = null;
                 WamSubscriptionUpdate wamSubscriptionupdate = new WamSubscriptionUpdate();
@@ -433,7 +433,7 @@ namespace RW4OBDistributorProcess
             try
             {
                 bool isApiTokenExpire = false;
-                string Status = "";
+                string Status = subscription.StatusCd;
                 do
                 {
                     HttpClientHandler handler = new HttpClientHandler()
