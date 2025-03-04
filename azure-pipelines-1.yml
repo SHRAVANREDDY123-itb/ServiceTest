@@ -7,7 +7,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'
+  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'  
   buildConfiguration: 'Release'
   targetFolder: '$(Build.ArtifactStagingDirectory)/assembly'
 
@@ -16,27 +16,28 @@ stages:
   jobs:
   - job: Build
     steps:
+   
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '6.x'
+        version: '6.x'  
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    # Restore dependencies for all projects
+
     - task: DotNetCoreCLI@2
       inputs:
         command: restore
-        projects: '**/*.csproj'
+        projects: '**/*.csproj'  
 
-    # Build the project
+    
     - task: DotNetCoreCLI@2
       inputs:
         command: build
-        projects: '**/*.csproj'
+        projects: '**/*.csproj'  
         arguments: '--configuration $(buildConfiguration)'
 
-    # Publish the output
+    
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: 'RW4BNSFTelemetrySVC/bin/$(buildConfiguration)/net6.0/RW4BNSFTelemetrySvc.dll'
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'  
         artifactName: 'drop'
