@@ -7,7 +7,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'  
+  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Set to the path of the specific project you want to build
   buildConfiguration: 'Release'
   targetFolder: '$(Build.ArtifactStagingDirectory)/assembly'
 
@@ -16,28 +16,28 @@ stages:
   jobs:
   - job: Build
     steps:
-   
+    # Install .NET 6 SDK (if not already installed)
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '6.x'  
+        version: '6.x'  # Ensure that .NET 6 SDK is installed
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
-
+    # Restore dependencies for the specific project (RW4BNSFTelemetry.csproj)
     - task: DotNetCoreCLI@2
       inputs:
         command: restore
-        projects: '**/*.csproj'  
+        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Path to your specific project file
 
-    
+    # Build the specific project (RW4BNSFTelemetry.csproj)
     - task: DotNetCoreCLI@2
       inputs:
         command: build
-        projects: '**/*.csproj'  
+        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Path to your specific project file
         arguments: '--configuration $(buildConfiguration)'
 
-    
+    # Publish the output (if needed)
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'  
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'  # Adjust if needed
         artifactName: 'drop'
