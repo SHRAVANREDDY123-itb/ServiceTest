@@ -22,22 +22,20 @@ stages:
         version: '6.x'
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: clean
-        projects: '**/*.csproj'
-
+    # Restore dependencies for all projects
     - task: DotNetCoreCLI@2
       inputs:
         command: restore
         projects: '**/*.csproj'
 
+    # Build the project
     - task: DotNetCoreCLI@2
       inputs:
         command: build
         projects: '**/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
 
+    # Publish the output
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: 'RW4BNSFTelemetrySVC/bin/$(buildConfiguration)/net6.0/RW4BNSFTelemetrySvc.dll'
