@@ -7,9 +7,9 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Set to the path of the specific project you want to build
+  projectFile: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'  # Set to the path of the specific project you want to build
   buildConfiguration: 'Release'
-  targetFolder: '$(Build.ArtifactStagingDirectory)/assembly'
+  targetFolder: '$(Build.ArtifactStagingDirectory)/assembly' #RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj
 
 stages:
 - stage: Build
@@ -27,13 +27,13 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: restore
-        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Path to your specific project file
+        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'  # Path to your specific project file
 
     # Build the specific project (RW4BNSFTelemetry.csproj)
     - task: DotNetCoreCLI@2
       inputs:
         command: build
-        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetry.csproj'  # Path to your specific project file
+        projects: 'RW4BNSFTelemetrySVC/RW4BNSFTelemetrySvc.csproj'  # Path to your specific project file
         arguments: '--configuration $(buildConfiguration)'
 
     # Publish the output (if needed)
